@@ -1,0 +1,808 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Classic Roll Call</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0d0b08;
+  --panel:#1a1510;
+  --panel-2:#241c14;
+  --line:#8a6d34;
+  --line-soft:#3a2e1e;
+  --gold:#d4af5a;
+  --gold-bright:#f2d27a;
+  --gold-dim:#8a6d34;
+  --text:#ebdcb8;
+  --muted:#a08f6b;
+  --horde:#c0392b;
+  --alliance:#3a7bd5;
+  --pvp:#d2703a;
+  --pve:#5b9c6c;
+  --in:#7fc16b;
+  --maybe:#d9a83b;
+  --out:#8c8c8c;
+  --neutral:#3a2e1e;
+  --danger:#c0392b;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg);
+  background-image:
+    radial-gradient(ellipse at 50% -10%, rgba(212,175,90,.10), transparent 55%),
+    linear-gradient(180deg,#110e0a 0%,var(--bg) 40%);
+  color:var(--text);
+  font-family:"Alegreya Sans","Segoe UI",system-ui,-apple-system,sans-serif;
+  font-size:17px;
+  line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+}
+/* parchment grain */
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.045;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.wrap{position:relative;z-index:1;max-width:880px;margin:0 auto;padding:36px 16px 72px}
+a{color:inherit}
+
+/* ---- masthead ---- */
+.masthead{text-align:center;padding-bottom:22px;margin-bottom:30px;position:relative}
+.masthead::after{
+  content:"";display:block;height:2px;margin:18px auto 0;width:min(420px,80%);
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+}
+.crest{
+  width:56px;height:56px;margin:0 auto 10px;display:block;
+  filter:drop-shadow(0 0 10px rgba(212,175,90,.35));
+}
+h1{
+  font-family:"Cinzel",Georgia,serif;
+  font-weight:700;
+  font-size:clamp(28px,6.2vw,44px);
+  letter-spacing:.06em;
+  margin:0 0 6px;
+  color:var(--gold);
+  text-shadow:0 0 14px rgba(212,175,90,.25),0 2px 0 rgba(0,0,0,.6);
+}
+.masthead p{margin:0 auto;color:var(--muted);max-width:56ch}
+.editable-title{
+  background:none;border:none;padding:0;width:100%;font:inherit;color:inherit;
+  text-align:center;letter-spacing:inherit;text-shadow:inherit
+}
+.editable-title:focus{outline:2px solid var(--gold-dim);outline-offset:4px;border-radius:2px}
+
+h2{
+  font-family:"Cinzel",Georgia,serif;
+  font-weight:600;
+  font-size:18px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  margin:0 0 14px;
+  color:var(--gold);
+}
+
+/* ---- gold-framed panel ---- */
+.panel{
+  position:relative;
+  background:linear-gradient(180deg,var(--panel-2),var(--panel));
+  border:1px solid var(--gold-dim);
+  box-shadow:inset 0 0 0 3px var(--panel),inset 0 0 0 4px var(--line-soft),0 8px 24px rgba(0,0,0,.45);
+  padding:22px 20px;
+  margin-bottom:26px;
+}
+.panel::before,.panel::after{
+  content:"";position:absolute;width:16px;height:16px;pointer-events:none
+}
+.panel::before{top:-1px;left:-1px;border-top:2px solid var(--gold);border-left:2px solid var(--gold)}
+.panel::after{bottom:-1px;right:-1px;border-bottom:2px solid var(--gold);border-right:2px solid var(--gold)}
+
+/* ---- notices ---- */
+.notice{
+  padding:14px 16px;border:1px solid var(--gold-dim);border-left:4px solid var(--gold);
+  background:var(--panel);color:var(--text);font-size:15px;margin-bottom:26px
+}
+.notice p{margin:0 0 8px}
+.notice p:last-child{margin:0}
+.notice code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;color:var(--gold-bright)}
+.hidden{display:none !important}
+
+/* ---- the call ---- */
+.split{margin-bottom:22px}
+.split-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:7px;flex-wrap:wrap}
+.split-head strong{font-weight:700;font-size:19px}
+.split-head span{color:var(--muted);font-size:15px}
+.bar{
+  display:flex;height:22px;border:1px solid var(--gold-dim);
+  background:var(--neutral);overflow:hidden;
+  box-shadow:inset 0 2px 4px rgba(0,0,0,.5);
+}
+.bar div{transition:width .35s ease}
+.bar .a{background:linear-gradient(180deg,#d9483a,var(--horde))}
+.bar .b{background:linear-gradient(180deg,#5b93e0,var(--alliance))}
+.split.realm .bar .a{background:linear-gradient(180deg,#e2864f,var(--pvp))}
+.split.realm .bar .b{background:linear-gradient(180deg,#72b383,var(--pve))}
+.bar .mid{background:repeating-linear-gradient(45deg,transparent,transparent 5px,rgba(255,255,255,.06) 5px,rgba(255,255,255,.06) 10px)}
+.legend{display:flex;justify-content:space-between;margin-top:6px;font-size:14px;color:var(--muted)}
+.legend b{font-weight:500;color:var(--text)}
+.flag{
+  margin-top:14px;padding:10px 14px;border-left:3px solid var(--gold);
+  background:rgba(212,175,90,.06);font-size:15px;color:var(--text)
+}
+.flag + .flag{margin-top:8px}
+
+.coverage{margin-top:6px}
+.coverage-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:8px;flex-wrap:wrap}
+.coverage-head strong{font-size:17px}
+.coverage-head span{color:var(--muted);font-size:14px}
+.cov-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+@media (min-width:640px){.cov-grid{grid-template-columns:repeat(9,1fr)}}
+.cov{
+  display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0;
+  padding:8px 2px;border:1px solid var(--line-soft);background:rgba(0,0,0,.25);
+  font-family:"Cinzel",Georgia,serif;font-size:11px;letter-spacing:.03em;
+}
+.cov b{font-family:"Alegreya Sans",sans-serif;font-size:18px;font-weight:700}
+.cov.zero{opacity:.35}
+.cov.zero b{color:var(--muted)}
+
+/* ---- roster ---- */
+.roster-head{display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:14px}
+.roster-head h2{margin:0}
+.maybes{display:flex;align-items:center;gap:7px;font-size:15px;color:var(--muted);cursor:pointer}
+.maybes input{accent-color:var(--gold);width:16px;height:16px}
+ul.roster{list-style:none;margin:0;padding:0;border-top:1px solid var(--line-soft)}
+ul.roster li{
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  padding:12px 14px;border-bottom:1px solid var(--line-soft);
+  border-left:4px solid var(--neutral);
+  background:rgba(0,0,0,.18);
+}
+li.f-horde{border-left-color:var(--horde)}
+li.f-alliance{border-left-color:var(--alliance)}
+li.out{opacity:.5}
+li.me{background:rgba(212,175,90,.07)}
+.who{flex:1 1 150px;min-width:0}
+.who .nm{font-weight:700;font-size:17px;display:block;overflow-wrap:anywhere}
+.who .nm .you{
+  display:inline-block;margin-left:8px;padding:0 7px;font-size:11px;line-height:18px;
+  font-family:"Cinzel",Georgia,serif;letter-spacing:.08em;
+  color:var(--bg);background:var(--gold);border-radius:2px;vertical-align:middle
+}
+.who .note{color:var(--muted);font-size:14px;font-style:italic;display:block}
+.who .when{color:var(--muted);font-size:13px;display:block;opacity:.8}
+.chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.chip{
+  font-family:"Cinzel",Georgia,serif;font-size:12px;letter-spacing:.04em;
+  padding:3px 9px;border:1px solid var(--line-soft);border-radius:2px;white-space:nowrap;
+  background:rgba(0,0,0,.3)
+}
+.chip.horde{color:#ff6b5e;border-color:var(--horde)}
+.chip.alliance{color:#7fb0ff;border-color:var(--alliance)}
+.chip.pvp{color:#ff9d6a;border-color:var(--pvp)}
+.chip.pve{color:#8fd4a0;border-color:var(--pve)}
+.chip.status-in{color:var(--in);border-color:var(--in)}
+.chip.status-maybe{color:var(--maybe);border-color:var(--maybe)}
+.chip.status-out{color:var(--out);border-color:var(--out)}
+.chip.st{color:var(--muted)}
+.chip.cls{font-weight:700;border-style:solid}
+.row-acts{display:flex;gap:4px}
+.icon{
+  background:none;border:1px solid transparent;color:var(--muted);
+  font:inherit;font-size:14px;padding:4px 8px;cursor:pointer;border-radius:2px
+}
+.icon:hover{border-color:var(--gold-dim);color:var(--gold-bright)}
+.empty{padding:26px 14px;color:var(--muted);border-bottom:1px solid var(--line-soft)}
+
+/* ---- form ---- */
+.field{margin-bottom:16px}
+.field > label,.field > .lbl{
+  display:block;font-size:13px;color:var(--muted);margin-bottom:6px;
+  font-family:"Cinzel",Georgia,serif;letter-spacing:.08em;text-transform:uppercase
+}
+.hint{font-size:14px;color:var(--muted);margin:-6px 0 16px}
+input[type=text],select{
+  width:100%;padding:9px 11px;font:inherit;font-size:16px;
+  background:rgba(0,0,0,.35);color:var(--text);
+  border:1px solid var(--line-soft);border-radius:2px
+}
+select{appearance:none;-webkit-appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--gold) 50%),linear-gradient(135deg,var(--gold) 50%,transparent 50%);background-position:calc(100% - 18px) 50%,calc(100% - 13px) 50%;background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:34px}
+select option{background:var(--panel-2);color:var(--text)}
+input[type=text]:focus,select:focus{outline:2px solid var(--gold-dim);outline-offset:1px}
+input::placeholder{color:#6f6148}
+.seg{display:flex;flex-wrap:wrap;gap:0;border:1px solid var(--line-soft);border-radius:2px;overflow:hidden}
+.seg label{flex:1 1 0;min-width:74px;position:relative}
+.seg input{position:absolute;opacity:0;width:0;height:0}
+.seg span{
+  display:block;text-align:center;padding:9px 6px;font-size:14px;cursor:pointer;
+  font-family:"Cinzel",Georgia,serif;letter-spacing:.04em;
+  background:rgba(0,0,0,.35);border-right:1px solid var(--line-soft);color:var(--muted);
+  user-select:none
+}
+.seg label:last-child span{border-right:none}
+.seg input:checked + span{background:linear-gradient(180deg,var(--gold-bright),var(--gold));color:#1a1204;font-weight:700}
+.seg.status input[value="in"]:checked + span{background:linear-gradient(180deg,#9ad889,var(--in))}
+.seg.status input[value="maybe"]:checked + span{background:linear-gradient(180deg,#ecc063,var(--maybe))}
+.seg.status input[value="out"]:checked + span{background:linear-gradient(180deg,#a7a7a7,var(--out))}
+.seg.faction input[value="horde"]:checked + span{background:linear-gradient(180deg,#e05a4c,var(--horde));color:#fff}
+.seg.faction input[value="alliance"]:checked + span{background:linear-gradient(180deg,#6a9ee6,var(--alliance));color:#fff}
+.seg.realm input[value="pvp"]:checked + span{background:linear-gradient(180deg,#e8905f,var(--pvp));color:#fff}
+.seg.realm input[value="pve"]:checked + span{background:linear-gradient(180deg,#7dbd8f,var(--pve));color:#fff}
+.seg input:focus-visible + span{outline:2px solid var(--gold);outline-offset:-2px}
+
+.class-picks{display:flex;flex-wrap:wrap;gap:6px}
+.class-picks label{position:relative}
+.class-picks input{position:absolute;opacity:0;width:0;height:0}
+.class-picks span{
+  display:block;padding:6px 11px;cursor:pointer;user-select:none;
+  font-family:"Cinzel",Georgia,serif;font-size:13px;letter-spacing:.04em;
+  color:var(--muted);border:1px solid var(--line-soft);border-radius:2px;background:rgba(0,0,0,.35);
+  transition:color .12s,border-color .12s,background .12s
+}
+.class-picks input:checked + span{
+  color:var(--c);border-color:var(--c);background:color-mix(in srgb,var(--c) 14%,transparent);font-weight:700
+}
+.class-picks input:focus-visible + span{outline:2px solid var(--gold);outline-offset:1px}
+
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:560px){.two{grid-template-columns:1fr}}
+.actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+button.primary{
+  font-family:"Cinzel",Georgia,serif;font-weight:700;font-size:15px;letter-spacing:.06em;
+  padding:11px 22px;cursor:pointer;
+  background:linear-gradient(180deg,var(--gold-bright),var(--gold) 55%,#b8923e);
+  color:#1a1204;border:1px solid #6b5326;border-radius:2px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 2px 6px rgba(0,0,0,.5)
+}
+button.ghost{
+  font-family:"Cinzel",Georgia,serif;font-size:14px;letter-spacing:.04em;
+  padding:11px 16px;cursor:pointer;
+  background:none;color:var(--muted);border:1px solid var(--line-soft);border-radius:2px
+}
+button.primary:hover{filter:brightness(1.08)}
+button.ghost:hover{color:var(--gold-bright);border-color:var(--gold-dim)}
+button:focus-visible,.icon:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+button:disabled{opacity:.5;cursor:default}
+
+.tip-wrap{position:relative;display:inline-block}
+.tip{
+  position:absolute;left:50%;bottom:calc(100% + 9px);
+  transform:translate(-50%,5px);
+  white-space:nowrap;padding:6px 11px;font-size:14px;font-weight:700;
+  background:var(--gold);color:#1a1204;border-radius:3px;
+  opacity:0;pointer-events:none;
+  transition:opacity .18s ease,transform .18s ease;
+}
+.tip::after{
+  content:"";position:absolute;top:100%;left:50%;margin-left:-5px;
+  border:5px solid transparent;border-top-color:var(--gold)
+}
+.tip.show{opacity:1;transform:translate(-50%,0)}
+
+footer{margin-top:34px;padding-top:16px;border-top:1px solid var(--line-soft);color:var(--muted);font-size:14px;text-align:center}
+footer .sync{display:block;margin-top:8px;color:var(--gold);font-family:"Cinzel",Georgia,serif;font-size:12px;letter-spacing:.06em;min-height:18px}
+footer .sync.err{color:#ff6b5e}
+
+@media (prefers-reduced-motion:reduce){.bar div,.tip,.class-picks span{transition:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <svg class="crest" viewBox="0 0 64 64" aria-hidden="true">
+      <defs>
+        <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#f2d27a"/><stop offset="1" stop-color="#8a6d34"/>
+        </linearGradient>
+      </defs>
+      <path d="M32 3 L56 12 V30 C56 45 45 56 32 61 C19 56 8 45 8 30 V12 Z" fill="#1a1510" stroke="url(#g)" stroke-width="2.5"/>
+      <path d="M32 9 L50 16 V30 C50 41 42 50 32 54 C22 50 14 41 14 30 V16 Z" fill="none" stroke="url(#g)" stroke-width="1" opacity=".6"/>
+      <path d="M32 16 L36 27 L48 28 L39 35 L42 47 L32 41 L22 47 L25 35 L16 28 L28 27 Z" fill="url(#g)"/>
+    </svg>
+    <h1><input class="editable-title" id="title" value="Classic Roll Call" aria-label="Tracker name" spellcheck="false" maxlength="60"></h1>
+    <p>Who's committing to Classic, and what we're rolling. Add yourself, change your mind whenever — everyone sees the same board, live.</p>
+  </header>
+
+  <div class="notice hidden" id="setup-notice">
+    <p><strong>Not connected to Firebase yet.</strong> Anything you add here lives only in this tab until the config is pasted in.</p>
+    <p>Open <code>index.html</code>, find <code>PASTE YOUR FIREBASE CONFIG HERE</code>, and follow the README. Once it's in, this banner goes away and the roster is shared.</p>
+  </div>
+
+  <section class="panel" aria-labelledby="call-h">
+    <h2 id="call-h">Where the group stands</h2>
+    <div id="splits"></div>
+    <div class="coverage">
+      <div class="coverage-head"><strong>Class coverage</strong><span id="cov-note"></span></div>
+      <div class="cov-grid" id="coverage"></div>
+    </div>
+    <div id="flags"></div>
+  </section>
+
+  <section class="panel" aria-labelledby="roster-h">
+    <div class="roster-head">
+      <h2 id="roster-h">The roster</h2>
+      <label class="maybes"><input type="checkbox" id="count-maybes" checked> Count maybes in the totals</label>
+    </div>
+    <ul class="roster" id="roster"></ul>
+  </section>
+
+  <section class="panel" aria-labelledby="form-h">
+    <h2 id="form-h">Add yourself</h2>
+    <p class="hint hidden" id="form-hint"></p>
+
+    <div class="field">
+      <label for="f-name">Name</label>
+      <input type="text" id="f-name" placeholder="Battletag, first name, character — whatever you go by" maxlength="40" autocomplete="off">
+    </div>
+
+    <div class="field">
+      <span class="lbl">Are you in?</span>
+      <div class="seg status" id="f-status" role="group" aria-label="Are you in?"></div>
+    </div>
+
+    <div class="two">
+      <div class="field">
+        <span class="lbl">Faction</span>
+        <div class="seg faction" id="f-faction" role="group" aria-label="Faction"></div>
+      </div>
+      <div class="field">
+        <span class="lbl">Realm type</span>
+        <div class="seg realm" id="f-realm" role="group" aria-label="Realm type"></div>
+      </div>
+    </div>
+
+    <div class="field">
+      <span class="lbl">Classes you're eyeing</span>
+      <div class="class-picks" id="f-classes" role="group" aria-label="Classes you're eyeing"></div>
+    </div>
+
+    <div class="two">
+      <div class="field">
+        <label for="f-server">Preferred server time</label>
+        <select id="f-server"></select>
+      </div>
+      <div class="field">
+        <label for="f-note">Anything else</label>
+        <input type="text" id="f-note" placeholder="Can't raid weeknights" maxlength="70" autocomplete="off">
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="primary" id="f-save">Add to roster</button>
+      <button class="ghost hidden" id="f-cancel">Cancel</button>
+    </div>
+  </section>
+
+  <div class="actions" style="justify-content:center">
+    <span class="tip-wrap">
+      <button class="ghost" id="copy">Copy a summary for chat</button>
+      <span class="tip" id="copy-tip" role="status" aria-live="polite"></span>
+    </span>
+  </div>
+
+  <footer>
+    All nine classes are open to both factions in Forever, so the faction vote costs nobody their class pick. Realm type is the one that's hard to undo.
+    <span class="sync" id="sync"></span>
+  </footer>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+import { getDatabase, ref, onValue, push, set, update, remove, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js";
+
+// ── PASTE YOUR FIREBASE CONFIG HERE ─────────────────────────────────────────
+// Firebase console → Project settings → Your apps → Web app → "SDK setup and
+// configuration" → Config. Replace this whole object. Make sure databaseURL
+// is present (it appears once the Realtime Database exists).
+const firebaseConfig = {
+  apiKey: "PASTE_ME",
+  authDomain: "PASTE_ME.firebaseapp.com",
+  databaseURL: "https://PASTE_ME-default-rtdb.firebaseio.com",
+  projectId: "PASTE_ME",
+  storageBucket: "PASTE_ME.firebasestorage.app",
+  messagingSenderId: "0",
+  appId: "1:0:web:0"
+};
+// ────────────────────────────────────────────────────────────────────────────
+
+const CLASSES = [
+  { name:"Warrior", color:"#C69B6D" },
+  { name:"Paladin", color:"#F48CBA" },
+  { name:"Hunter",  color:"#AAD372" },
+  { name:"Rogue",   color:"#FFF468" },
+  { name:"Priest",  color:"#FFFFFF" },
+  { name:"Shaman",  color:"#0070DD" },
+  { name:"Mage",    color:"#3FC7EB" },
+  { name:"Warlock", color:"#8788EE" },
+  { name:"Druid",   color:"#FF7C0A" }
+];
+const HEALERS = ["Priest","Druid","Shaman","Paladin"];
+const TANKS   = ["Warrior","Druid","Paladin"];
+
+const STATUS  = [["in","In"],["maybe","Maybe"],["out","Out"]];
+const FACTION = [["horde","Horde"],["alliance","Alliance"],["either","Either"]];
+const REALM   = [["pvp","PvP"],["pve","PvE"],["either","Either"]];
+const SERVER  = [["any","No preference"],["et","Eastern"],["ct","Central"],["mt","Mountain"],["pt","Pacific"]];
+
+const DEFAULT_TITLE = "Classic Roll Call";
+const LS_ME = "classic-roll-call:me";
+
+const $ = id => document.getElementById(id);
+
+let state = { title: DEFAULT_TITLE, players: {} };
+let editingId = null;
+let countMaybes = true;
+let myId = null;
+try { myId = localStorage.getItem(LS_ME); } catch (e) {}
+
+/* ---------- persistence: Firebase or in-memory fallback ---------- */
+
+const configured = firebaseConfig.apiKey && !firebaseConfig.apiKey.includes("PASTE_ME");
+let api;
+
+if (configured) {
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const now = () => serverTimestamp();
+  api = {
+    add(rec) {
+      const r = push(ref(db, "players"));
+      return set(r, { ...rec, createdAt: now(), updatedAt: now() }).then(() => r.key);
+    },
+    edit(id, rec) {
+      const prev = state.players[id] || {};
+      return set(ref(db, "players/" + id), { ...rec, createdAt: prev.createdAt || now(), updatedAt: now() });
+    },
+    remove(id) { return remove(ref(db, "players/" + id)); },
+    setTitle(t) { return set(ref(db, "meta/title"), t); }
+  };
+  const onErr = err => {
+    console.error(err);
+    setSync("Can't reach the roster. Check the Firebase rules (see README).", true);
+  };
+  onValue(ref(db, "players"), snap => {
+    state.players = snap.val() || {};
+    render();
+    setSync("Live — everyone with the link sees this board.");
+  }, onErr);
+  onValue(ref(db, "meta/title"), snap => {
+    state.title = snap.val() || DEFAULT_TITLE;
+    render();
+  }, onErr);
+} else {
+  $("setup-notice").classList.remove("hidden");
+  setSync("Not connected — changes stay in this tab.", true);
+  let seq = 0;
+  const now = () => Date.now();
+  api = {
+    add(rec) {
+      const id = "local" + (++seq) + Date.now().toString(36);
+      state.players[id] = { ...rec, createdAt: now(), updatedAt: now() };
+      render(); return Promise.resolve(id);
+    },
+    edit(id, rec) {
+      const prev = state.players[id] || {};
+      state.players[id] = { ...rec, createdAt: prev.createdAt || now(), updatedAt: now() };
+      render(); return Promise.resolve();
+    },
+    remove(id) { delete state.players[id]; render(); return Promise.resolve(); },
+    setTitle(t) { state.title = t; render(); return Promise.resolve(); }
+  };
+}
+
+function setSync(t, isErr) {
+  const el = $("sync");
+  el.textContent = t;
+  el.classList.toggle("err", !!isErr);
+}
+function saveFailed(err) {
+  console.error(err);
+  setSync("That didn't save. " + (err && err.code === "PERMISSION_DENIED"
+    ? "Firebase rejected it — check the rules in the README."
+    : "Try again in a moment."), true);
+}
+
+/* ---------- helpers ---------- */
+
+const players = () => Object.entries(state.players).map(([id, p]) => ({ id, ...p }));
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+const labelOf = (list, v) => (list.find(o => o[0] === v) || ["",""])[1];
+const classesOf = p => CLASSES.filter(c => p.classes && p.classes[c.name]).map(c => c.name);
+
+function ago(ts) {
+  if (!ts || typeof ts !== "number") return "";
+  const s = Math.max(0, (Date.now() - ts) / 1000);
+  if (s < 60) return "just now";
+  const m = s / 60;   if (m < 60) return Math.floor(m) + "m ago";
+  const h = m / 60;   if (h < 24) return Math.floor(h) + "h ago";
+  const d = h / 24;   if (d < 14) return Math.floor(d) + "d ago";
+  return new Date(ts).toLocaleDateString(undefined, { month:"short", day:"numeric" });
+}
+
+/* ---------- tallies ---------- */
+
+function counted() {
+  return players().filter(p => p.status === "in" || (countMaybes && p.status === "maybe"));
+}
+
+function tally(field, a, b) {
+  const pool = counted(), r = { a:0, b:0, undecided:0, total:pool.length };
+  pool.forEach(p => {
+    if (p[field] === a) r.a++;
+    else if (p[field] === b) r.b++;
+    else r.undecided++;
+  });
+  return r;
+}
+
+function verdictLine(t, aLabel, bLabel) {
+  if (t.total === 0) return "Nobody's weighed in yet";
+  if (t.a === 0 && t.b === 0) return "Everyone's flexible";
+  if (t.a === t.b) return "Dead even at " + t.a + " apiece";
+  const lead = t.a > t.b ? aLabel : bLabel;
+  return lead + " by " + Math.max(t.a, t.b) + " to " + Math.min(t.a, t.b);
+}
+
+function marginNote(t) {
+  if (t.total === 0) return "";
+  if (t.undecided > 0) return t.undecided + (t.undecided === 1 ? " person is" : " people are") + " still flexible";
+  if (t.a === t.b) return "someone has to break the tie";
+  return "";
+}
+
+function splitHTML(cls, label, t, aLabel, bLabel) {
+  const denom = Math.max(t.total, 1);
+  const pa = Math.round(t.a / denom * 100);
+  const pb = Math.round(t.b / denom * 100);
+  const pm = Math.max(0, 100 - pa - pb);
+  const note = marginNote(t);
+  return `<div class="split ${cls}">
+    <div class="split-head"><strong>${verdictLine(t, aLabel, bLabel)}</strong>${note ? `<span>${note}</span>` : ""}</div>
+    <div class="bar" role="img" aria-label="${label}: ${t.a} ${aLabel}, ${t.b} ${bLabel}, ${t.undecided} flexible">
+      <div class="a" style="width:${pa}%"></div><div class="mid" style="width:${pm}%"></div><div class="b" style="width:${pb}%"></div>
+    </div>
+    <div class="legend"><b>${aLabel} ${t.a}</b><b>${bLabel} ${t.b}</b></div>
+  </div>`;
+}
+
+function coverageHTML() {
+  const pool = counted();
+  const counts = {};
+  CLASSES.forEach(c => counts[c.name] = 0);
+  let undecided = 0;
+  pool.forEach(p => {
+    const cs = classesOf(p);
+    if (!cs.length) undecided++;
+    cs.forEach(n => counts[n]++);
+  });
+  $("cov-note").textContent = pool.length
+    ? (undecided ? undecided + " still undecided on class" : "everyone's picked something")
+    : "";
+  return CLASSES.map(c => `<div class="cov${counts[c.name] ? "" : " zero"}" style="color:${c.color}">
+      <b>${counts[c.name]}</b>${c.name}</div>`).join("");
+}
+
+function flags() {
+  const out = [];
+  const pool = counted();
+  const healers = pool.filter(p => classesOf(p).some(n => HEALERS.includes(n))).length;
+  const tanks   = pool.filter(p => classesOf(p).some(n => TANKS.includes(n))).length;
+  if (pool.length >= 3 && healers === 0) out.push("Nobody's eyeing a healer yet. Five-mans get rough without one.");
+  if (pool.length >= 3 && tanks === 0)   out.push("No one's leaning tank. Somebody's going to have to hold aggro.");
+  const maybes = players().filter(p => p.status === "maybe").length;
+  if (maybes && countMaybes) out.push(maybes + (maybes === 1 ? " maybe is" : " maybes are") + " propping up these numbers. Untick the box to see the committed count.");
+  return out.map(t => `<p class="flag">${esc(t)}</p>`).join("");
+}
+
+/* ---------- render ---------- */
+
+function render() {
+  if (document.activeElement !== $("title")) $("title").value = state.title;
+  document.title = state.title;
+
+  $("splits").innerHTML =
+    splitHTML("faction", "Faction", tally("faction","horde","alliance"), "Horde", "Alliance") +
+    splitHTML("realm",   "Realm type", tally("realm","pvp","pve"), "PvP", "PvE");
+  $("coverage").innerHTML = coverageHTML();
+  $("flags").innerHTML = flags();
+
+  const ul = $("roster");
+  const list = players();
+  const meOnBoard = myId && state.players[myId];
+  const hint = $("form-hint");
+  if (meOnBoard && !editingId) {
+    hint.textContent = "You're already on the roster as " + meOnBoard.name + " — hit Edit on your row to change your picks. This form adds someone else.";
+    hint.classList.remove("hidden");
+  } else {
+    hint.classList.add("hidden");
+  }
+
+  if (!list.length) {
+    ul.innerHTML = '<li class="empty">No one on the list yet. Start with yourself.</li>';
+    return;
+  }
+  const order = { in:0, maybe:1, out:2 };
+  list.sort((a, b) =>
+    (a.id === myId ? -1 : b.id === myId ? 1 : 0) ||
+    (order[a.status] - order[b.status]) ||
+    String(a.name).localeCompare(String(b.name)));
+
+  ul.innerHTML = list.map(p => {
+    let chips = `<span class="chip status-${esc(p.status)}">${labelOf(STATUS, p.status)}</span>`;
+    if (p.faction !== "either") chips += `<span class="chip ${esc(p.faction)}">${labelOf(FACTION, p.faction)}</span>`;
+    if (p.realm !== "either")   chips += `<span class="chip ${esc(p.realm)}">${labelOf(REALM, p.realm)}</span>`;
+    classesOf(p).forEach(n => {
+      const c = CLASSES.find(x => x.name === n);
+      chips += `<span class="chip cls" style="color:${c.color};border-color:${c.color}">${n}</span>`;
+    });
+    if (p.serverTime && p.serverTime !== "any") chips += `<span class="chip st">${labelOf(SERVER, p.serverTime)} time</span>`;
+    const when = ago(p.updatedAt);
+    return `<li class="f-${esc(p.faction)}${p.status === "out" ? " out" : ""}${p.id === myId ? " me" : ""}">
+      <span class="who"><span class="nm">${esc(p.name)}${p.id === myId ? '<span class="you">you</span>' : ""}</span>
+        ${p.note ? `<span class="note">${esc(p.note)}</span>` : ""}
+        ${when ? `<span class="when">updated ${when}</span>` : ""}</span>
+      <span class="chips">${chips}</span>
+      <span class="row-acts">
+        <button class="icon" data-edit="${esc(p.id)}">Edit</button>
+        <button class="icon" data-del="${esc(p.id)}">Remove</button>
+      </span></li>`;
+  }).join("");
+}
+
+/* ---------- form ---------- */
+
+function segments(host, name, list, def) {
+  host.innerHTML = list.map(o =>
+    `<label><input type="radio" name="${name}" value="${o[0]}"${o[0] === def ? " checked" : ""}><span>${o[1]}</span></label>`).join("");
+}
+const segValue = name => { const el = document.querySelector(`input[name="${name}"]:checked`); return el ? el.value : null; };
+const setSeg = (name, val) => { const el = document.querySelector(`input[name="${name}"][value="${val}"]`); if (el) el.checked = true; };
+
+segments($("f-status"),  "status",  STATUS,  "in");
+segments($("f-faction"), "faction", FACTION, "either");
+segments($("f-realm"),   "realm",   REALM,   "either");
+$("f-classes").innerHTML = CLASSES.map(c =>
+  `<label><input type="checkbox" name="cls" value="${c.name}"><span style="--c:${c.color}">${c.name}</span></label>`).join("");
+$("f-server").innerHTML = SERVER.map(o => `<option value="${o[0]}">${o[1]}</option>`).join("");
+
+function pickedClasses() {
+  const m = {};
+  document.querySelectorAll('input[name="cls"]:checked').forEach(el => m[el.value] = true);
+  return Object.keys(m).length ? m : null;
+}
+function setClasses(map) {
+  document.querySelectorAll('input[name="cls"]').forEach(el => el.checked = !!(map && map[el.value]));
+}
+
+function resetForm() {
+  editingId = null;
+  $("f-name").value = "";
+  $("f-note").value = "";
+  $("f-server").value = "any";
+  setClasses(null);
+  setSeg("status","in"); setSeg("faction","either"); setSeg("realm","either");
+  $("f-save").textContent = "Add to roster";
+  $("f-cancel").classList.add("hidden");
+  $("form-h").textContent = "Add yourself";
+}
+
+$("f-save").addEventListener("click", () => {
+  const name = $("f-name").value.trim();
+  if (!name) { $("f-name").focus(); setSync("Add a name first.", true); return; }
+  const rec = {
+    name: name.slice(0, 40),
+    status: segValue("status") || "in",
+    faction: segValue("faction") || "either",
+    realm: segValue("realm") || "either",
+    classes: pickedClasses(),
+    serverTime: $("f-server").value || "any",
+    note: $("f-note").value.trim().slice(0, 70)
+  };
+  $("f-save").disabled = true;
+  const p = editingId ? api.edit(editingId, rec) : api.add(rec).then(id => {
+    if (!myId) { myId = id; try { localStorage.setItem(LS_ME, id); } catch (e) {} }
+  });
+  p.then(() => { resetForm(); render(); }, saveFailed)
+   .finally(() => { $("f-save").disabled = false; });
+});
+
+$("f-cancel").addEventListener("click", () => { resetForm(); render(); });
+
+$("roster").addEventListener("click", e => {
+  const t = e.target;
+  const ed = t.getAttribute && t.getAttribute("data-edit");
+  const dl = t.getAttribute && t.getAttribute("data-del");
+  if (ed) {
+    const p = state.players[ed];
+    if (!p) return;
+    editingId = ed;
+    $("f-name").value = p.name || "";
+    $("f-note").value = p.note || "";
+    $("f-server").value = p.serverTime || "any";
+    setClasses(p.classes);
+    setSeg("status", p.status); setSeg("faction", p.faction); setSeg("realm", p.realm);
+    $("f-save").textContent = "Save changes";
+    $("f-cancel").classList.remove("hidden");
+    $("form-h").textContent = "Editing " + p.name;
+    $("form-hint").classList.add("hidden");
+    $("f-name").focus();
+    $("f-name").scrollIntoView({ block:"center", behavior:"smooth" });
+  }
+  if (dl) {
+    const p = state.players[dl];
+    if (!p) return;
+    if (!confirm("Remove " + p.name + " from the roster?")) return;
+    if (editingId === dl) resetForm();
+    api.remove(dl).then(() => {
+      if (myId === dl) { myId = null; try { localStorage.removeItem(LS_ME); } catch (e) {} }
+    }, saveFailed);
+  }
+});
+
+$("count-maybes").addEventListener("change", function () { countMaybes = this.checked; render(); });
+
+$("title").addEventListener("change", function () {
+  const t = this.value.trim().slice(0, 60) || DEFAULT_TITLE;
+  this.value = t;
+  api.setTitle(t).catch(saveFailed);
+});
+$("title").addEventListener("keydown", e => { if (e.key === "Enter") e.target.blur(); });
+
+/* ---------- copy summary ---------- */
+
+$("copy").addEventListener("click", () => {
+  const f = tally("faction","horde","alliance"), r = tally("realm","pvp","pve");
+  const lines = [state.title, verdictLine(f,"Horde","Alliance") + " · " + verdictLine(r,"PvP","PvE"), ""];
+  const all = players();
+  ["in","maybe","out"].forEach(s => {
+    const g = all.filter(p => p.status === s).sort((a,b) => String(a.name).localeCompare(String(b.name)));
+    if (!g.length) return;
+    lines.push(labelOf(STATUS, s) + " (" + g.length + ")");
+    g.forEach(p => {
+      const bits = [labelOf(FACTION, p.faction), labelOf(REALM, p.realm)];
+      const cs = classesOf(p); if (cs.length) bits.push(cs.join("/"));
+      if (p.serverTime && p.serverTime !== "any") bits.push(labelOf(SERVER, p.serverTime) + " time");
+      lines.push("  " + p.name + " — " + bits.join(", ") + (p.note ? " (" + p.note + ")" : ""));
+    });
+    lines.push("");
+  });
+  lines.push(location.href.split("#")[0]);
+  const text = lines.join("\n").trim();
+  const done = () => showTip("copy-tip", "Copied to clipboard");
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done, () => fallbackCopy(text, done, "copy-tip"));
+  } else fallbackCopy(text, done, "copy-tip");
+});
+
+const tipTimers = {};
+function showTip(id, msg) {
+  const el = $(id); if (!el) return;
+  el.textContent = msg; el.classList.add("show");
+  clearTimeout(tipTimers[id]);
+  tipTimers[id] = setTimeout(() => el.classList.remove("show"), 2600);
+}
+function fallbackCopy(text, done, tipFor) {
+  const ta = document.createElement("textarea");
+  ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand("copy"); done(); }
+  catch (e) { if (tipFor) showTip(tipFor, "Couldn't copy — select it by hand"); }
+  document.body.removeChild(ta);
+}
+
+/* ---------- boot ---------- */
+
+resetForm();
+render();
+setInterval(() => { if (!editingId) render(); }, 60000);   // keep "updated Xm ago" fresh
+</script>
+</body>
+</html>

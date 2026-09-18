@@ -1,0 +1,36 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "meta": {
+      ".read": true,
+      "title": {
+        ".write": true,
+        ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 60"
+      },
+      "$other": { ".validate": false }
+    },
+
+    "players": {
+      ".read": true,
+      "$id": {
+        ".write": true,
+        ".validate": "!newData.exists() || newData.hasChildren(['name', 'status', 'faction', 'realm', 'createdAt', 'updatedAt'])",
+
+        "name":       { ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 40" },
+        "status":     { ".validate": "newData.isString() && newData.val().matches(/^(in|maybe|out)$/)" },
+        "faction":    { ".validate": "newData.isString() && newData.val().matches(/^(horde|alliance|either)$/)" },
+        "realm":      { ".validate": "newData.isString() && newData.val().matches(/^(pvp|pve|either)$/)" },
+        "serverTime": { ".validate": "newData.isString() && newData.val().matches(/^(any|et|ct|mt|pt)$/)" },
+        "note":       { ".validate": "newData.isString() && newData.val().length <= 70" },
+        "createdAt":  { ".validate": "newData.isNumber()" },
+        "updatedAt":  { ".validate": "newData.isNumber()" },
+        "classes": {
+          "$cls": { ".validate": "$cls.matches(/^(Warrior|Paladin|Hunter|Rogue|Priest|Shaman|Mage|Warlock|Druid)$/) && newData.isBoolean()" }
+        },
+        "$other": { ".validate": false }
+      }
+    }
+  }
+}
