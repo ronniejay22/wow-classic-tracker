@@ -127,7 +127,8 @@ h2{
 .split.realm .bar .b{background:linear-gradient(180deg,#72b383,var(--pve))}
 .bar .mid{background:repeating-linear-gradient(45deg,transparent,transparent 5px,rgba(255,255,255,.06) 5px,rgba(255,255,255,.06) 10px)}
 .legend{display:flex;justify-content:space-between;margin-top:6px;font-size:14px;color:var(--muted)}
-.legend b{font-weight:500;color:var(--text)}
+.legend b{font-weight:500;color:var(--text);display:flex;align-items:center;gap:6px}
+.legend img{width:22px;height:22px;border-radius:4px;border:1px solid rgba(0,0,0,.6)}
 .flag{
   margin-top:14px;padding:10px 14px;border-left:3px solid var(--gold);
   background:rgba(212,175,90,.06);font-size:15px;color:var(--text)
@@ -226,11 +227,14 @@ input::placeholder{color:#6f6148}
 .seg label{flex:1 1 0;min-width:74px;position:relative}
 .seg input{position:absolute;opacity:0;width:0;height:0}
 .seg span{
-  display:block;text-align:center;padding:9px 6px;font-size:14px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  padding:7px 6px;min-height:40px;font-size:14px;cursor:pointer;
   font-family:"Cinzel",Georgia,serif;letter-spacing:.04em;
   background:rgba(0,0,0,.35);border-right:1px solid var(--line-soft);color:var(--muted);
   user-select:none
 }
+.seg span img{width:24px;height:24px;border-radius:4px;filter:grayscale(.85) brightness(.7);transition:filter .12s}
+.seg input:checked + span img{filter:none;box-shadow:0 0 0 1px rgba(0,0,0,.5)}
 .seg label:last-child span{border-right:none}
 .seg input:checked + span{background:linear-gradient(180deg,var(--gold-bright),var(--gold));color:#1a1204;font-weight:700}
 .seg.faction input[value="horde"]:checked + span{background:linear-gradient(180deg,#e05a4c,var(--horde));color:#fff}
@@ -445,7 +449,9 @@ const iconImg = (c, cls) => `<img class="${cls}" src="${c.icon}" alt="${c.name}"
 const HEALERS = ["Priest","Druid","Shaman","Paladin"];
 const TANKS   = ["Warrior","Druid","Paladin"];
 
-const FACTION = [["horde","Horde"],["alliance","Alliance"],["either","Either"]];
+const FACTION = [["horde","Horde","icons/horde.jpg"],["alliance","Alliance","icons/alliance.jpg"],["either","Either"]];
+const FACTION_ICON = { horde: "icons/horde.jpg", alliance: "icons/alliance.jpg" };
+const facImg = (f, cls) => `<img class="${cls}" src="${FACTION_ICON[f]}" alt="${labelOf(FACTION, f)}" title="${labelOf(FACTION, f)}" width="56" height="56" style="--c:var(--${f})">`;
 const REALM   = [["pvp","PvP"],["pve","PvE"],["either","Either"]];
 const SERVER  = [["any","No preference"],["et","Eastern"],["ct","Central"],["mt","Mountain"],["pt","Pacific"]];
 
@@ -571,7 +577,8 @@ function marginNote(t) {
   return "";
 }
 
-function splitHTML(cls, label, t, aLabel, bLabel) {
+function splitHTML(cls, label, t, aLabel, bLabel, aIcon, bIcon) {
+  const ico = src => src ? `<img src="${src}" alt="" width="56" height="56">` : "";
   const denom = Math.max(t.total, 1);
   const pa = Math.round(t.a / denom * 100);
   const pb = Math.round(t.b / denom * 100);
@@ -582,7 +589,7 @@ function splitHTML(cls, label, t, aLabel, bLabel) {
     <div class="bar" role="img" aria-label="${label}: ${t.a} ${aLabel}, ${t.b} ${bLabel}, ${t.undecided} flexible">
       <div class="a" style="width:${pa}%"></div><div class="mid" style="width:${pm}%"></div><div class="b" style="width:${pb}%"></div>
     </div>
-    <div class="legend"><b>${aLabel} ${t.a}</b><b>${bLabel} ${t.b}</b></div>
+    <div class="legend"><b>${ico(aIcon)}${aLabel} ${t.a}</b><b>${bLabel} ${t.b}${ico(bIcon)}</b></div>
   </div>`;
 }
 
@@ -620,7 +627,7 @@ function render() {
   document.title = state.title;
 
   $("splits").innerHTML =
-    splitHTML("faction", "Faction", tally("faction","horde","alliance"), "Horde", "Alliance") +
+    splitHTML("faction", "Faction", tally("faction","horde","alliance"), "Horde", "Alliance", FACTION_ICON.horde, FACTION_ICON.alliance) +
     splitHTML("realm",   "Realm type", tally("realm","pvp","pve"), "PvP", "PvE");
   $("coverage").innerHTML = coverageHTML();
   $("flags").innerHTML = flags();
@@ -666,7 +673,7 @@ function render() {
 
 function chipsFor(p) {
   let chips = "";
-  chips += p.faction === "either" ? `<span class="chip st">Any faction</span>` : `<span class="chip ${esc(p.faction)}">${labelOf(FACTION, p.faction)}</span>`;
+  chips += p.faction === "either" ? `<span class="chip st">Any faction</span>` : facImg(p.faction, "cls-ico");
   chips += p.realm === "either"   ? `<span class="chip st">PvP or PvE</span>`  : `<span class="chip ${esc(p.realm)}">${labelOf(REALM, p.realm)}</span>`;
   classesOf(p).forEach(n => {
     const c = CLASSES.find(x => x.name === n);
@@ -680,7 +687,7 @@ function chipsFor(p) {
 
 function segments(host, name, list, def) {
   host.innerHTML = list.map(o =>
-    `<label><input type="radio" name="${name}" value="${o[0]}"${o[0] === def ? " checked" : ""}><span>${o[1]}</span></label>`).join("");
+    `<label><input type="radio" name="${name}" value="${o[0]}"${o[0] === def ? " checked" : ""}><span>${o[2] ? `<img src="${o[2]}" alt="" width="56" height="56">` : ""}${o[1]}</span></label>`).join("");
 }
 const segValue = name => { const el = document.querySelector(`input[name="${name}"]:checked`); return el ? el.value : null; };
 const setSeg = (name, val) => { const el = document.querySelector(`input[name="${name}"][value="${val}"]`); if (el) el.checked = true; };
