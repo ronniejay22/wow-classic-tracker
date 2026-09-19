@@ -187,7 +187,10 @@ button:disabled{opacity:.5;cursor:default}
   position:relative;cursor:default;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0;
   padding:12px 4px 10px;background:var(--card);border:1px solid var(--line);border-radius:var(--r)
 }
+.cov{cursor:pointer}
 .cov:hover{border-color:var(--line-2)}
+.cov.sel{border-color:var(--gold);background:var(--card-2)}
+.cov.sel b{color:var(--gold)}
 .cov:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
 .cov img{width:36px;height:36px;border-radius:6px;border:2px solid currentColor;background:#000}
 .cov b{font-weight:700;font-size:22px;line-height:1.1;color:#fff}
@@ -197,6 +200,32 @@ button:disabled{opacity:.5;cursor:default}
 .cov.zero b{color:var(--muted)}
 .flag{margin-top:16px;padding:12px 16px;background:var(--card);border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:var(--r);font-size:15px}
 .flag + .flag{margin-top:8px}
+
+/* ---- filters + roster list ---- */
+.filter-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:16px}
+.filter-lbl{font-family:"Poppins",system-ui,sans-serif;font-weight:600;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.seg.filters{gap:6px}
+.seg.filters label{flex:0 0 auto;min-width:0}
+.seg.filters span{padding:8px 14px;min-height:40px}
+.seg.filters input[value="all"]:checked + span,.seg.filters input[value="either"]:checked + span{border-bottom-color:var(--gold)}
+.filter-bar .icon{margin-left:auto}
+.roster{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.row{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:14px;padding:14px 16px;border-top:1px solid var(--line)}
+.row:first-child{border-top:none}
+.row.me{box-shadow:inset 3px 0 0 var(--gold)}
+.row .sides{display:flex;gap:6px;align-items:center;width:118px;flex-shrink:0}
+.row .sides .chip{height:30px;display:inline-flex;align-items:center;padding:0 8px;white-space:nowrap}
+.row .sides .cls-ico{width:30px;height:30px}
+.row .who{min-width:0}
+.row .nm{font-weight:600;font-size:16px;color:#fff;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.row .meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:6px}
+.row .meta img{width:24px;height:24px;border-radius:4px;border:1px solid var(--c);background:#000;display:block}
+.row .note{font-style:italic;color:var(--muted);font-size:14px;margin-top:4px}
+.row .side{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.row .when{color:var(--dim);font-size:12.5px;white-space:nowrap}
+.row .acts{display:flex;gap:2px}
+.roster .empty{border:none;border-radius:0}
+.roster .empty .icon{color:var(--gold)}
 
 /* ---- war table ---- */
 .split-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap}
@@ -290,6 +319,13 @@ footer .sync.err{color:var(--danger)}
   .section{padding-top:36px}
   .section + .section{margin-top:36px}
   .card-box{padding:16px}
+  .row{grid-template-columns:auto 1fr;gap:10px 12px;padding:12px}
+  .row .side{grid-column:1 / -1;flex-direction:row;justify-content:space-between;align-items:center}
+  .row .sides{width:104px}
+  .row .sides .cls-ico{width:26px;height:26px}
+  .row .sides .chip{height:26px;font-size:11px;padding:0 6px}
+  .row .meta img{width:22px;height:22px}
+  .filter-bar .icon{margin-left:0}
   .war{gap:4px}
   .war .rh{padding:6px 6px;gap:0;font-size:0;min-width:0}
   .war .rh b{font-size:13px;margin-left:4px}
@@ -406,14 +442,32 @@ footer .sync.err{color:var(--danger)}
       <span class="count" id="cov-note"></span>
     </div>
     <div class="cov-grid" id="coverage"></div>
+    <div class="filter-bar">
+      <span class="filter-lbl">Faction</span>
+      <div class="seg faction filters" id="f-filter" role="group" aria-label="Filter by faction">
+        <label><input type="radio" name="ffilter" value="all" checked><span>All</span></label>
+        <label><input type="radio" name="ffilter" value="horde"><span><img src="icons/horde.jpg" alt="" width="56" height="56">Horde</span></label>
+        <label><input type="radio" name="ffilter" value="alliance"><span><img src="icons/alliance.jpg" alt="" width="56" height="56">Alliance</span></label>
+        <label title="Will fight for whoever's paying — playing both sides"><input type="radio" name="ffilter" value="either"><span>Mercenaries</span></label>
+      </div>
+      <button class="icon hidden" id="clear-filters">Clear filters</button>
+    </div>
     <div id="flags"></div>
+  </section>
+
+  <section class="section" id="roster-panel" aria-labelledby="roster-h">
+    <div class="sec-head">
+      <span class="w-ico" aria-hidden="true"></span>
+      <h2 id="roster-h">Roster</h2>
+      <span class="count" id="roster-meta"></span>
+    </div>
+    <div class="roster" id="roster"></div>
   </section>
 
   <section class="section" id="lines-panel" aria-labelledby="lines-h">
     <div class="sec-head">
       <span class="w-ico" aria-hidden="true"></span>
       <h2 id="lines-h">War table</h2>
-      <span class="count" id="roster-count"></span>
     </div>
     <div class="split-head"><strong id="lines-verdict"></strong><span id="lines-note"></span></div>
     <div class="war" id="war"></div>
@@ -483,6 +537,9 @@ const $ = id => document.getElementById(id);
 let state = { title: DEFAULT_TITLE, players: {} };
 let editingId = null;
 let addingAnother = false;   // "Add someone else" opened the form while you're already on the roster
+// Roster filters: class tiles (multi-select, OR) and the faction row. Session-only.
+let classFilter = new Set();
+let factionFilter = "all";     // all | horde | alliance | either
 let loadState = "loading";   // loading | slow | ready | error — the roster is only trustworthy once "ready"
 let slowTimer = null;
 // The war table's axes. Rows are faction, columns are realm type; "either" sits in the middle of each.
@@ -712,12 +769,43 @@ function coverageHTML() {
     const tip = names.length
       ? names.map(n => `<span>${esc(n)}</span>`).join("")
       : `<em>Nobody yet</em>`;
-    return `<div class="cov${names.length ? "" : " zero"}" style="color:${c.color};--c:${c.color}" tabindex="0"
-        aria-label="${c.name}: ${names.length ? esc(names.join(", ")) : "nobody yet"}">
+    const sel = classFilter.has(c.name);
+    return `<div class="cov${names.length ? "" : " zero"}${sel ? " sel" : ""}" style="color:${c.color};--c:${c.color}" tabindex="0"
+        role="button" aria-pressed="${sel}" data-cls="${c.name}"
+        aria-label="${c.name}: ${names.length ? esc(names.join(", ")) : "nobody yet"}. Click to filter the roster">
       ${iconImg(c, "")}<b>${names.length}</b><span class="cov-name">${c.name}</span>
       <div class="tt" aria-hidden="true"><strong>${c.name}</strong>${tip}</div>
     </div>`;
   }).join("");
+}
+
+function filteredPlayers() {
+  return players().filter(p =>
+    (factionFilter === "all" || fOf(p) === factionFilter) &&
+    (classFilter.size === 0 || classesOf(p).some(c => classFilter.has(c)))
+  ).sort(byMe);
+}
+
+// One full-width roster row.
+function rowHTML(p) {
+  const me = p.id === myId;
+  const cs = classesOf(p).map(n => CLASSES.find(x => x.name === n));
+  const fac = fOf(p) === "either" ? `<span class="chip" title="Mercenary — will fight for whoever's paying">Merc</span>` : optImg(FACTION, p.faction, "cls-ico");
+  const realm = rOf(p) === "either" ? `<span class="chip" title="PvP or PvE">PvP/PvE</span>` : optImg(REALM, p.realm, "cls-ico");
+  const server = p.serverTime && p.serverTime !== "any" ? `<span class="chip">${labelOf(SERVER, p.serverTime)} time</span>` : "";
+  const when = ago(p.updatedAt);
+  return `<div class="row${me ? " me" : ""}">
+    <div class="sides">${fac}${realm}</div>
+    <div class="who">
+      <div class="nm">${esc(p.name)}${me ? '<span class="you">you</span>' : ""}</div>
+      <div class="meta">${cs.map(c => iconImg(c, "")).join("")}${cs.length ? "" : `<span class="chip">Class undecided</span>`}${server}</div>
+      ${p.note ? `<div class="note">${esc(p.note)}</div>` : ""}
+    </div>
+    <div class="side">
+      ${when ? `<span class="when">updated ${when}</span>` : ""}
+      ${me ? `<span class="acts"><button class="icon" data-edit="${esc(p.id)}">Edit</button><button class="icon" data-del="${esc(p.id)}">Remove</button></span>` : ""}
+    </div>
+  </div>`;
 }
 
 function flags() {
@@ -755,7 +843,9 @@ function render() {
     $("war").innerHTML = "";
     $("coverage").innerHTML = "";
     $("flags").innerHTML = "";
-    $("roster-count").textContent = $("topbar-count").textContent = "";
+    $("topbar-count").textContent = "";
+    $("roster").innerHTML = "";
+    $("roster-meta").textContent = "";
     return;
   }
 
@@ -764,8 +854,19 @@ function render() {
   $("lines-verdict").textContent = v.line;
   $("lines-note").textContent = v.note;
   const list = players();
-  $("roster-count").textContent = $("topbar-count").textContent = list.length ? list.length + (list.length === 1 ? " player" : " players") : "";
+  $("topbar-count").textContent = list.length ? list.length + (list.length === 1 ? " player" : " players") : "";
   $("war").innerHTML = list.length ? tableHTML() : '<div class="empty">No one on the list yet. Start with yourself.</div>';
+
+  // Roster list (filtered)
+  const shown = filteredPlayers();
+  const filtering = classFilter.size > 0 || factionFilter !== "all";
+  $("roster-meta").textContent = !list.length ? "" : filtering ? "Showing " + shown.length + " of " + list.length : list.length + (list.length === 1 ? " player" : " players");
+  $("clear-filters").classList.toggle("hidden", !filtering);
+  const ff = document.querySelector(`input[name="ffilter"][value="${factionFilter}"]`); if (ff) ff.checked = true;
+  $("roster").innerHTML = !list.length
+    ? '<div class="empty">No one on the list yet. Start with yourself.</div>'
+    : shown.length ? shown.map(rowHTML).join("")
+    : '<div class="empty">No one matches those filters. <button class="icon" data-clear>Clear filters</button></div>';
 
   $("coverage").innerHTML = coverageHTML();
   $("flags").innerHTML = flags();
@@ -893,6 +994,27 @@ $("war").addEventListener("click", e => {
   if (!c || e.target.closest(".pill")) return;
   pinned = (pinned === c) ? null : c;
   highlight(pinned);
+});
+
+// Filters
+function toggleClass(name) {
+  if (classFilter.has(name)) classFilter.delete(name); else classFilter.add(name);
+  render();
+}
+function clearFilters() { classFilter.clear(); factionFilter = "all"; render(); }
+$("coverage").addEventListener("click", e => { const t = e.target.closest(".cov"); if (t) toggleClass(t.dataset.cls); });
+$("coverage").addEventListener("keydown", e => {
+  const t = e.target.closest(".cov");
+  if (t && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); const n = t.dataset.cls; toggleClass(n); document.querySelector(`.cov[data-cls="${n}"]`)?.focus(); }
+});
+$("f-filter").addEventListener("change", e => { factionFilter = e.target.value; render(); });
+$("clear-filters").addEventListener("click", clearFilters);
+$("roster").addEventListener("click", e => {
+  const t = e.target;
+  if (t.hasAttribute("data-clear")) return clearFilters();
+  const ed = t.getAttribute("data-edit"), dl = t.getAttribute("data-del");
+  if (ed) startEdit(ed);
+  if (dl) removeRow(dl);
 });
 
 $("me-edit").addEventListener("click", () => startEdit(myId));
