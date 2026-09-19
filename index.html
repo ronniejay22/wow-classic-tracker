@@ -622,18 +622,20 @@ function optionStats() {
 }
 
 function verdict() {
-  const { total, opts, best } = optionStats();
+  const total = players().length;
   if (!total) return { line: "Nobody's weighed in yet", note: "" };
   const flexible = players().filter(p => fOf(p) === "either" || rOf(p) === "either").length;
   const note = flexible ? flexible + (flexible === 1 ? " person is" : " people are") + " flexible on at least one axis" : "everyone's decided";
-  const tops = opts.filter(o => o.best);
-  const of = best + " of " + total;
-  let line;
-  if (tops.length === 1) line = tops[0].label + " works for the most people — " + of;
-  else if (tops.length === 2 && tops[0].r === tops[1].r) line = of + " either way — " + labelOf(REALM, tops[0].r) + " is settled, faction is the tiebreaker";
-  else if (tops.length === 2 && tops[0].f === tops[1].f) line = of + " either way — " + labelOf(FACTION, tops[0].f) + " is settled, realm type is the tiebreaker";
-  else if (tops.length === 2) line = "Split down the middle: " + tops[0].label + " and " + tops[1].label + " both work for " + of;
-  else line = "Everything works for " + of + " — the flexible crowd decides";
+  // Who's ahead on each axis, counting only people who've picked a side.
+  const lead = (field, a, b, aLabel, bLabel, what) => {
+    const na = players().filter(p => (p[field] || "either") === a).length;
+    const nb = players().filter(p => (p[field] || "either") === b).length;
+    if (!na && !nb) return "No " + what + " picks yet";
+    if (na === nb) return aLabel + " and " + bLabel + " tied " + na + "–" + nb;
+    return (na > nb ? aLabel : bLabel) + " leads " + Math.max(na, nb) + "–" + Math.min(na, nb);
+  };
+  const line = lead("faction", "horde", "alliance", "Horde", "Alliance", "faction") + " · " +
+               lead("realm", "pvp", "pve", "PvP", "PvE", "realm");
   return { line, note };
 }
 
