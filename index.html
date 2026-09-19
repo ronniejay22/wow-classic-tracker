@@ -213,7 +213,7 @@ button:disabled{opacity:.5;cursor:default}
 .row{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:14px;padding:14px 16px;border-top:1px solid var(--line)}
 .row:first-child{border-top:none}
 .row.me{box-shadow:inset 3px 0 0 var(--gold)}
-.row .sides{display:flex;gap:6px;align-items:center;width:118px;flex-shrink:0}
+.row .sides{display:flex;gap:6px;align-items:center;width:66px;flex-shrink:0}
 .row .sides .chip{height:30px;display:inline-flex;align-items:center;padding:0 8px;white-space:nowrap}
 .row .sides .cls-ico{width:30px;height:30px}
 .row .who{min-width:0}
@@ -321,7 +321,7 @@ footer .sync.err{color:var(--danger)}
   .card-box{padding:16px}
   .row{grid-template-columns:auto 1fr;gap:10px 12px;padding:12px}
   .row .side{grid-column:1 / -1;flex-direction:row;justify-content:space-between;align-items:center}
-  .row .sides{width:104px}
+  .row .sides{width:58px}
   .row .sides .cls-ico{width:26px;height:26px}
   .row .sides .chip{height:26px;font-size:11px;padding:0 6px}
   .row .meta img{width:22px;height:22px}
@@ -448,7 +448,7 @@ footer .sync.err{color:var(--danger)}
         <label><input type="radio" name="ffilter" value="all" checked><span>All</span></label>
         <label><input type="radio" name="ffilter" value="horde"><span><img src="icons/horde.jpg" alt="" width="56" height="56">Horde</span></label>
         <label><input type="radio" name="ffilter" value="alliance"><span><img src="icons/alliance.jpg" alt="" width="56" height="56">Alliance</span></label>
-        <label title="Will fight for whoever's paying — playing both sides"><input type="radio" name="ffilter" value="either"><span>Mercenaries</span></label>
+        <label title="Will fight for whoever's paying — playing both sides"><input type="radio" name="ffilter" value="either"><span><img src="icons/merc.jpg" alt="" width="56" height="56">Mercenaries</span></label>
       </div>
       <button class="icon hidden" id="clear-filters">Clear filters</button>
     </div>
@@ -521,6 +521,9 @@ const HEALERS = ["Priest","Druid","Shaman","Paladin"];
 const TANKS   = ["Warrior","Druid","Paladin"];
 
 const FACTION = [["horde","Horde","icons/horde.jpg"],["alliance","Alliance","icons/alliance.jpg"],["either","Either"]];
+// Flexible picks get their own icons: a handshake for mercenaries, dice for "could go either way".
+const MERC_IMG  = cls => `<img class="${cls}" src="icons/merc.jpg" alt="Mercenary" title="Mercenary — will fight for whoever's paying" width="56" height="56" style="--c:var(--gold)">`;
+const DICE_IMG  = cls => `<img class="${cls}" src="icons/anyrealm.jpg" alt="PvP or PvE" title="PvP or PvE — could go either way" width="56" height="56" style="--c:#8a8a8a">`;
 const REALM   = [["pvp","PvP","icons/pvp.jpg"],["pve","PvE","icons/pve.jpg"],["either","Either"]];
 // Icon chip for a faction or realm-type value; the CSS color token shares the value's name.
 const optImg = (list, v, cls) => {
@@ -545,12 +548,12 @@ let slowTimer = null;
 // The war table's axes. Rows are faction, columns are realm type; "either" sits in the middle of each.
 const ROWS = [
   { v:"horde",    label:"Horde",    icon:"icons/horde.jpg",    color:"var(--horde)" },
-  { v:"either",   label:"Either",   icon:null,                 color:null },
+  { v:"either",   label:"Either",   icon:"icons/merc.jpg",     color:null },
   { v:"alliance", label:"Alliance", icon:"icons/alliance.jpg", color:"var(--alliance)" }
 ];
 const COLS = [
   { v:"pvp",    label:"PvP",    icon:"icons/pvp.jpg" },
-  { v:"either", label:"Either", icon:null },
+  { v:"either", label:"Either", icon:"icons/anyrealm.jpg" },
   { v:"pve",    label:"PvE",    icon:"icons/pve.jpg" }
 ];
 let myId = null;
@@ -790,8 +793,8 @@ function filteredPlayers() {
 function rowHTML(p) {
   const me = p.id === myId;
   const cs = classesOf(p).map(n => CLASSES.find(x => x.name === n));
-  const fac = fOf(p) === "either" ? `<span class="chip" title="Mercenary — will fight for whoever's paying">Merc</span>` : optImg(FACTION, p.faction, "cls-ico");
-  const realm = rOf(p) === "either" ? `<span class="chip" title="PvP or PvE">PvP/PvE</span>` : optImg(REALM, p.realm, "cls-ico");
+  const fac = fOf(p) === "either" ? MERC_IMG("cls-ico") : optImg(FACTION, p.faction, "cls-ico");
+  const realm = rOf(p) === "either" ? DICE_IMG("cls-ico") : optImg(REALM, p.realm, "cls-ico");
   const server = p.serverTime && p.serverTime !== "any" ? `<span class="chip">${labelOf(SERVER, p.serverTime)} time</span>` : "";
   const when = ago(p.updatedAt);
   return `<div class="row${me ? " me" : ""}">
@@ -890,8 +893,8 @@ function render() {
 // already states, so its chip is left out.
 function chipsFor(p, skip) {
   const text = [], icons = [];
-  if (skip !== "faction") { if (p.faction === "either") text.push(`<span class="chip st">Any faction</span>`); else icons.push(optImg(FACTION, p.faction, "cls-ico")); }
-  if (skip !== "realm")   { if (p.realm === "either")   text.push(`<span class="chip st">PvP or PvE</span>`);  else icons.push(optImg(REALM, p.realm, "cls-ico")); }
+  if (skip !== "faction") icons.push(p.faction === "either" ? MERC_IMG("cls-ico") : optImg(FACTION, p.faction, "cls-ico"));
+  if (skip !== "realm")   icons.push(p.realm === "either" ? DICE_IMG("cls-ico") : optImg(REALM, p.realm, "cls-ico"));
   if (p.serverTime && p.serverTime !== "any") text.push(`<span class="chip st">${labelOf(SERVER, p.serverTime)} time</span>`);
   classesOf(p).forEach(n => icons.push(iconImg(CLASSES.find(x => x.name === n), "cls-ico")));
   return text.concat(icons).join("");
