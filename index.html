@@ -450,9 +450,12 @@ const HEALERS = ["Priest","Druid","Shaman","Paladin"];
 const TANKS   = ["Warrior","Druid","Paladin"];
 
 const FACTION = [["horde","Horde","icons/horde.jpg"],["alliance","Alliance","icons/alliance.jpg"],["either","Either"]];
-const FACTION_ICON = { horde: "icons/horde.jpg", alliance: "icons/alliance.jpg" };
-const facImg = (f, cls) => `<img class="${cls}" src="${FACTION_ICON[f]}" alt="${labelOf(FACTION, f)}" title="${labelOf(FACTION, f)}" width="56" height="56" style="--c:var(--${f})">`;
-const REALM   = [["pvp","PvP"],["pve","PvE"],["either","Either"]];
+const REALM   = [["pvp","PvP","icons/pvp.jpg"],["pve","PvE","icons/pve.jpg"],["either","Either"]];
+// Icon chip for a faction or realm-type value; the CSS color token shares the value's name.
+const optImg = (list, v, cls) => {
+  const o = list.find(x => x[0] === v);
+  return o && o[2] ? `<img class="${cls}" src="${o[2]}" alt="${o[1]}" title="${o[1]}" width="56" height="56" style="--c:var(--${v})">` : "";
+};
 const SERVER  = [["any","No preference"],["et","Eastern"],["ct","Central"],["mt","Mountain"],["pt","Pacific"]];
 
 const DEFAULT_TITLE = "Classic Roll Call";
@@ -627,8 +630,8 @@ function render() {
   document.title = state.title;
 
   $("splits").innerHTML =
-    splitHTML("faction", "Faction", tally("faction","horde","alliance"), "Horde", "Alliance", FACTION_ICON.horde, FACTION_ICON.alliance) +
-    splitHTML("realm",   "Realm type", tally("realm","pvp","pve"), "PvP", "PvE");
+    splitHTML("faction", "Faction", tally("faction","horde","alliance"), "Horde", "Alliance", FACTION[0][2], FACTION[1][2]) +
+    splitHTML("realm",   "Realm type", tally("realm","pvp","pve"), "PvP", "PvE", REALM[0][2], REALM[1][2]);
   $("coverage").innerHTML = coverageHTML();
   $("flags").innerHTML = flags();
 
@@ -673,8 +676,8 @@ function render() {
 
 function chipsFor(p) {
   let chips = "";
-  chips += p.faction === "either" ? `<span class="chip st">Any faction</span>` : facImg(p.faction, "cls-ico");
-  chips += p.realm === "either"   ? `<span class="chip st">PvP or PvE</span>`  : `<span class="chip ${esc(p.realm)}">${labelOf(REALM, p.realm)}</span>`;
+  chips += p.faction === "either" ? `<span class="chip st">Any faction</span>` : optImg(FACTION, p.faction, "cls-ico");
+  chips += p.realm === "either"   ? `<span class="chip st">PvP or PvE</span>`  : optImg(REALM, p.realm, "cls-ico");
   classesOf(p).forEach(n => {
     const c = CLASSES.find(x => x.name === n);
     chips += iconImg(c, "cls-ico");
