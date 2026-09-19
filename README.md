@@ -1,6 +1,6 @@
 # Classic Roll Call
 
-A one-page roll call for a friend group heading into WoW Classic. Everyone adds themselves — in / maybe / out, faction, PvP or PvE, classes they're eyeing — and the whole group sees the same live board. Nobody's the decider; the page just makes the spread visible.
+A one-page roll call for a friend group heading into WoW Classic. Everyone adds themselves — faction, PvP or PvE, classes they're eyeing — and the whole group sees the same live board. Signing up means you're in; each person can only edit their own row (from the browser they added it in). Nobody's the decider; the page just makes the spread visible.
 
 - `index.html` — the whole app (no build step)
 - `firebase-rules.json` — database rules (deployable with the CLI, or paste into the console)

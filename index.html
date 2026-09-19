@@ -24,9 +24,6 @@
   --alliance:#3a7bd5;
   --pvp:#d2703a;
   --pve:#5b9c6c;
-  --in:#7fc16b;
-  --maybe:#d9a83b;
-  --out:#8c8c8c;
   --neutral:#3a2e1e;
   --danger:#c0392b;
 }
@@ -155,8 +152,7 @@ h2{
 /* ---- roster ---- */
 .roster-head{display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:14px}
 .roster-head h2{margin:0}
-.maybes{display:flex;align-items:center;gap:7px;font-size:15px;color:var(--muted);cursor:pointer}
-.maybes input{accent-color:var(--gold);width:16px;height:16px}
+.roster-head .count{font-family:"Cinzel",Georgia,serif;font-size:13px;letter-spacing:.06em;color:var(--muted)}
 ul.roster{list-style:none;margin:0;padding:0;border-top:1px solid var(--line-soft)}
 ul.roster li{
   display:flex;align-items:center;gap:12px;flex-wrap:wrap;
@@ -166,7 +162,6 @@ ul.roster li{
 }
 li.f-horde{border-left-color:var(--horde)}
 li.f-alliance{border-left-color:var(--alliance)}
-li.out{opacity:.5}
 li.me{background:rgba(212,175,90,.07)}
 .who{flex:1 1 150px;min-width:0}
 .who .nm{font-weight:700;font-size:17px;display:block;overflow-wrap:anywhere}
@@ -187,9 +182,6 @@ li.me{background:rgba(212,175,90,.07)}
 .chip.alliance{color:#7fb0ff;border-color:var(--alliance)}
 .chip.pvp{color:#ff9d6a;border-color:var(--pvp)}
 .chip.pve{color:#8fd4a0;border-color:var(--pve)}
-.chip.status-in{color:var(--in);border-color:var(--in)}
-.chip.status-maybe{color:var(--maybe);border-color:var(--maybe)}
-.chip.status-out{color:var(--out);border-color:var(--out)}
 .chip.st{color:var(--muted)}
 .chip.cls{font-weight:700;border-style:solid}
 .row-acts{display:flex;gap:4px}
@@ -199,6 +191,13 @@ li.me{background:rgba(212,175,90,.07)}
 }
 .icon:hover{border-color:var(--gold-dim);color:var(--gold-bright)}
 .empty{padding:26px 14px;color:var(--muted);border-bottom:1px solid var(--line-soft)}
+
+/* ---- collapsed "you're on the roster" bar ---- */
+.me-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.me-who{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-width:0}
+.me-who .lbl{font-family:"Cinzel",Georgia,serif;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.me-who strong{font-family:"Cinzel",Georgia,serif;font-size:20px;color:var(--gold);overflow-wrap:anywhere}
+.me-bar .actions{gap:6px}
 
 /* ---- form ---- */
 .field{margin-bottom:16px}
@@ -227,9 +226,6 @@ input::placeholder{color:#6f6148}
 }
 .seg label:last-child span{border-right:none}
 .seg input:checked + span{background:linear-gradient(180deg,var(--gold-bright),var(--gold));color:#1a1204;font-weight:700}
-.seg.status input[value="in"]:checked + span{background:linear-gradient(180deg,#9ad889,var(--in))}
-.seg.status input[value="maybe"]:checked + span{background:linear-gradient(180deg,#ecc063,var(--maybe))}
-.seg.status input[value="out"]:checked + span{background:linear-gradient(180deg,#a7a7a7,var(--out))}
 .seg.faction input[value="horde"]:checked + span{background:linear-gradient(180deg,#e05a4c,var(--horde));color:#fff}
 .seg.faction input[value="alliance"]:checked + span{background:linear-gradient(180deg,#6a9ee6,var(--alliance));color:#fff}
 .seg.realm input[value="pvp"]:checked + span{background:linear-gradient(180deg,#e8905f,var(--pvp));color:#fff}
@@ -315,36 +311,27 @@ footer .sync.err{color:#ff6b5e}
     <p>Open <code>index.html</code>, find <code>PASTE YOUR FIREBASE CONFIG HERE</code>, and follow the README. Once it's in, this banner goes away and the roster is shared.</p>
   </div>
 
-  <section class="panel" aria-labelledby="call-h">
-    <h2 id="call-h">Where the group stands</h2>
-    <div id="splits"></div>
-    <div class="coverage">
-      <div class="coverage-head"><strong>Class coverage</strong><span id="cov-note"></span></div>
-      <div class="cov-grid" id="coverage"></div>
-    </div>
-    <div id="flags"></div>
-  </section>
-
-  <section class="panel" aria-labelledby="roster-h">
-    <div class="roster-head">
-      <h2 id="roster-h">The roster</h2>
-      <label class="maybes"><input type="checkbox" id="count-maybes" checked> Count maybes in the totals</label>
-    </div>
-    <ul class="roster" id="roster"></ul>
-  </section>
-
   <section class="panel" aria-labelledby="form-h">
+    <div id="me-bar" class="me-bar hidden">
+      <div class="me-who">
+        <span class="lbl">You're on the roster as</span>
+        <strong id="me-name"></strong>
+        <span class="chips" id="me-chips"></span>
+      </div>
+      <div class="actions">
+        <button class="primary" id="me-edit">Edit my picks</button>
+        <button class="ghost" id="me-remove">Remove me</button>
+        <button class="icon" id="me-add-other">Add someone else</button>
+      </div>
+    </div>
+
+    <div id="form-body">
     <h2 id="form-h">Add yourself</h2>
     <p class="hint hidden" id="form-hint"></p>
 
     <div class="field">
       <label for="f-name">Name</label>
       <input type="text" id="f-name" placeholder="Battletag, first name, character — whatever you go by" maxlength="40" autocomplete="off">
-    </div>
-
-    <div class="field">
-      <span class="lbl">Are you in?</span>
-      <div class="seg status" id="f-status" role="group" aria-label="Are you in?"></div>
     </div>
 
     <div class="two">
@@ -378,6 +365,25 @@ footer .sync.err{color:#ff6b5e}
       <button class="primary" id="f-save">Add to roster</button>
       <button class="ghost hidden" id="f-cancel">Cancel</button>
     </div>
+    </div>
+  </section>
+
+  <section class="panel" aria-labelledby="call-h">
+    <h2 id="call-h">Where the group stands</h2>
+    <div id="splits"></div>
+    <div class="coverage">
+      <div class="coverage-head"><strong>Class coverage</strong><span id="cov-note"></span></div>
+      <div class="cov-grid" id="coverage"></div>
+    </div>
+    <div id="flags"></div>
+  </section>
+
+  <section class="panel" aria-labelledby="roster-h">
+    <div class="roster-head">
+      <h2 id="roster-h">The roster</h2>
+      <span class="count" id="roster-count"></span>
+    </div>
+    <ul class="roster" id="roster"></ul>
   </section>
 
   <div class="actions" style="justify-content:center">
@@ -427,7 +433,6 @@ const CLASSES = [
 const HEALERS = ["Priest","Druid","Shaman","Paladin"];
 const TANKS   = ["Warrior","Druid","Paladin"];
 
-const STATUS  = [["in","In"],["maybe","Maybe"],["out","Out"]];
 const FACTION = [["horde","Horde"],["alliance","Alliance"],["either","Either"]];
 const REALM   = [["pvp","PvP"],["pve","PvE"],["either","Either"]];
 const SERVER  = [["any","No preference"],["et","Eastern"],["ct","Central"],["mt","Mountain"],["pt","Pacific"]];
@@ -439,7 +444,7 @@ const $ = id => document.getElementById(id);
 
 let state = { title: DEFAULT_TITLE, players: {} };
 let editingId = null;
-let countMaybes = true;
+let addingAnother = false;   // "Add someone else" opened the form while you're already on the roster
 let myId = null;
 try { myId = localStorage.getItem(LS_ME); } catch (e) {}
 
@@ -529,12 +534,8 @@ function ago(ts) {
 
 /* ---------- tallies ---------- */
 
-function counted() {
-  return players().filter(p => p.status === "in" || (countMaybes && p.status === "maybe"));
-}
-
 function tally(field, a, b) {
-  const pool = counted(), r = { a:0, b:0, undecided:0, total:pool.length };
+  const pool = players(), r = { a:0, b:0, undecided:0, total:pool.length };
   pool.forEach(p => {
     if (p[field] === a) r.a++;
     else if (p[field] === b) r.b++;
@@ -574,7 +575,7 @@ function splitHTML(cls, label, t, aLabel, bLabel) {
 }
 
 function coverageHTML() {
-  const pool = counted();
+  const pool = players();
   const counts = {};
   CLASSES.forEach(c => counts[c.name] = 0);
   let undecided = 0;
@@ -592,13 +593,11 @@ function coverageHTML() {
 
 function flags() {
   const out = [];
-  const pool = counted();
+  const pool = players();
   const healers = pool.filter(p => classesOf(p).some(n => HEALERS.includes(n))).length;
   const tanks   = pool.filter(p => classesOf(p).some(n => TANKS.includes(n))).length;
   if (pool.length >= 3 && healers === 0) out.push("Nobody's eyeing a healer yet. Five-mans get rough without one.");
   if (pool.length >= 3 && tanks === 0)   out.push("No one's leaning tank. Somebody's going to have to hold aggro.");
-  const maybes = players().filter(p => p.status === "maybe").length;
-  if (maybes && countMaybes) out.push(maybes + (maybes === 1 ? " maybe is" : " maybes are") + " propping up these numbers. Untick the box to see the committed count.");
   return out.map(t => `<p class="flag">${esc(t)}</p>`).join("");
 }
 
@@ -614,47 +613,55 @@ function render() {
   $("coverage").innerHTML = coverageHTML();
   $("flags").innerHTML = flags();
 
+  // Top panel: collapsed "you're on the roster" bar once you've signed up,
+  // the full form while adding or editing.
+  const meOnBoard = myId ? state.players[myId] : null;
+  const collapsed = meOnBoard && !editingId && !addingAnother;
+  $("me-bar").classList.toggle("hidden", !collapsed);
+  $("form-body").classList.toggle("hidden", !!collapsed);
+  if (collapsed) {
+    $("me-name").textContent = meOnBoard.name;
+    $("me-chips").innerHTML = chipsFor(meOnBoard);
+  }
+  const hint = $("form-hint");
+  hint.classList.toggle("hidden", !(addingAnother && !editingId));
+  if (addingAnother && !editingId) hint.textContent = "Anyone you add here can only be edited from this browser.";
+
   const ul = $("roster");
   const list = players();
-  const meOnBoard = myId && state.players[myId];
-  const hint = $("form-hint");
-  if (meOnBoard && !editingId) {
-    hint.textContent = "You're on the roster as " + meOnBoard.name + " — hit Edit on your row to change your picks. Anyone you add here can only be edited from this browser.";
-    hint.classList.remove("hidden");
-  } else {
-    hint.classList.add("hidden");
-  }
-
+  $("roster-count").textContent = list.length ? list.length + (list.length === 1 ? " player" : " players") : "";
   if (!list.length) {
     ul.innerHTML = '<li class="empty">No one on the list yet. Start with yourself.</li>';
     return;
   }
-  const order = { in:0, maybe:1, out:2 };
   list.sort((a, b) =>
     (a.id === myId ? -1 : b.id === myId ? 1 : 0) ||
-    (order[a.status] - order[b.status]) ||
     String(a.name).localeCompare(String(b.name)));
 
   ul.innerHTML = list.map(p => {
-    let chips = `<span class="chip status-${esc(p.status)}">${labelOf(STATUS, p.status)}</span>`;
-    if (p.faction !== "either") chips += `<span class="chip ${esc(p.faction)}">${labelOf(FACTION, p.faction)}</span>`;
-    if (p.realm !== "either")   chips += `<span class="chip ${esc(p.realm)}">${labelOf(REALM, p.realm)}</span>`;
-    classesOf(p).forEach(n => {
-      const c = CLASSES.find(x => x.name === n);
-      chips += `<span class="chip cls" style="color:${c.color};border-color:${c.color}">${n}</span>`;
-    });
-    if (p.serverTime && p.serverTime !== "any") chips += `<span class="chip st">${labelOf(SERVER, p.serverTime)} time</span>`;
     const when = ago(p.updatedAt);
-    return `<li class="f-${esc(p.faction)}${p.status === "out" ? " out" : ""}${p.id === myId ? " me" : ""}">
+    return `<li class="f-${esc(p.faction)}${p.id === myId ? " me" : ""}">
       <span class="who"><span class="nm">${esc(p.name)}${p.id === myId ? '<span class="you">you</span>' : ""}</span>
         ${p.note ? `<span class="note">${esc(p.note)}</span>` : ""}
         ${when ? `<span class="when">updated ${when}</span>` : ""}</span>
-      <span class="chips">${chips}</span>
+      <span class="chips">${chipsFor(p)}</span>
       ${p.id === myId ? `<span class="row-acts">
         <button class="icon" data-edit="${esc(p.id)}">Edit</button>
         <button class="icon" data-del="${esc(p.id)}">Remove</button>
       </span>` : ""}</li>`;
   }).join("");
+}
+
+function chipsFor(p) {
+  let chips = "";
+  chips += p.faction === "either" ? `<span class="chip st">Any faction</span>` : `<span class="chip ${esc(p.faction)}">${labelOf(FACTION, p.faction)}</span>`;
+  chips += p.realm === "either"   ? `<span class="chip st">PvP or PvE</span>`  : `<span class="chip ${esc(p.realm)}">${labelOf(REALM, p.realm)}</span>`;
+  classesOf(p).forEach(n => {
+    const c = CLASSES.find(x => x.name === n);
+    chips += `<span class="chip cls" style="color:${c.color};border-color:${c.color}">${n}</span>`;
+  });
+  if (p.serverTime && p.serverTime !== "any") chips += `<span class="chip st">${labelOf(SERVER, p.serverTime)} time</span>`;
+  return chips;
 }
 
 /* ---------- form ---------- */
@@ -666,7 +673,6 @@ function segments(host, name, list, def) {
 const segValue = name => { const el = document.querySelector(`input[name="${name}"]:checked`); return el ? el.value : null; };
 const setSeg = (name, val) => { const el = document.querySelector(`input[name="${name}"][value="${val}"]`); if (el) el.checked = true; };
 
-segments($("f-status"),  "status",  STATUS,  "in");
 segments($("f-faction"), "faction", FACTION, "either");
 segments($("f-realm"),   "realm",   REALM,   "either");
 $("f-classes").innerHTML = CLASSES.map(c =>
@@ -684,11 +690,12 @@ function setClasses(map) {
 
 function resetForm() {
   editingId = null;
+  addingAnother = false;
   $("f-name").value = "";
   $("f-note").value = "";
   $("f-server").value = "any";
   setClasses(null);
-  setSeg("status","in"); setSeg("faction","either"); setSeg("realm","either");
+  setSeg("faction","either"); setSeg("realm","either");
   $("f-save").textContent = "Add to roster";
   $("f-cancel").classList.add("hidden");
   $("form-h").textContent = "Add yourself";
@@ -699,7 +706,6 @@ $("f-save").addEventListener("click", () => {
   if (!name) { $("f-name").focus(); setSync("Add a name first.", true); return; }
   const rec = {
     name: name.slice(0, 40),
-    status: segValue("status") || "in",
     faction: segValue("faction") || "either",
     realm: segValue("realm") || "either",
     classes: pickedClasses(),
@@ -716,39 +722,52 @@ $("f-save").addEventListener("click", () => {
 
 $("f-cancel").addEventListener("click", () => { resetForm(); render(); });
 
+function startEdit(id) {
+  const p = state.players[id];
+  if (!p || id !== myId) return;            // only your own row
+  editingId = id;
+  addingAnother = false;
+  $("f-name").value = p.name || "";
+  $("f-note").value = p.note || "";
+  $("f-server").value = p.serverTime || "any";
+  setClasses(p.classes);
+  setSeg("faction", p.faction); setSeg("realm", p.realm);
+  $("f-save").textContent = "Save changes";
+  $("f-cancel").classList.remove("hidden");
+  $("form-h").textContent = "Editing " + p.name;
+  render();
+  $("f-name").focus();
+  $("f-name").scrollIntoView({ block:"center", behavior:"smooth" });
+}
+
+function removeRow(id) {
+  const p = state.players[id];
+  if (!p || id !== myId) return;            // only your own row
+  if (!confirm("Remove " + p.name + " from the roster?")) return;
+  if (editingId === id) resetForm();
+  api.remove(id).then(() => {
+    if (myId === id) { myId = null; try { localStorage.removeItem(LS_ME); } catch (e) {} }
+    render();
+  }, saveFailed);
+}
+
 $("roster").addEventListener("click", e => {
   const t = e.target;
   const ed = t.getAttribute && t.getAttribute("data-edit");
   const dl = t.getAttribute && t.getAttribute("data-del");
-  if ((ed || dl) !== myId) return;          // only your own row
-  if (ed) {
-    const p = state.players[ed];
-    if (!p) return;
-    editingId = ed;
-    $("f-name").value = p.name || "";
-    $("f-note").value = p.note || "";
-    $("f-server").value = p.serverTime || "any";
-    setClasses(p.classes);
-    setSeg("status", p.status); setSeg("faction", p.faction); setSeg("realm", p.realm);
-    $("f-save").textContent = "Save changes";
-    $("f-cancel").classList.remove("hidden");
-    $("form-h").textContent = "Editing " + p.name;
-    $("form-hint").classList.add("hidden");
-    $("f-name").focus();
-    $("f-name").scrollIntoView({ block:"center", behavior:"smooth" });
-  }
-  if (dl) {
-    const p = state.players[dl];
-    if (!p) return;
-    if (!confirm("Remove " + p.name + " from the roster?")) return;
-    if (editingId === dl) resetForm();
-    api.remove(dl).then(() => {
-      if (myId === dl) { myId = null; try { localStorage.removeItem(LS_ME); } catch (e) {} }
-    }, saveFailed);
-  }
+  if (ed) startEdit(ed);
+  if (dl) removeRow(dl);
 });
 
-$("count-maybes").addEventListener("change", function () { countMaybes = this.checked; render(); });
+$("me-edit").addEventListener("click", () => startEdit(myId));
+$("me-remove").addEventListener("click", () => removeRow(myId));
+$("me-add-other").addEventListener("click", () => {
+  resetForm();
+  addingAnother = true;
+  $("form-h").textContent = "Add someone else";
+  render();
+  $("f-name").focus();
+});
 
 $("title").addEventListener("change", function () {
   const t = this.value.trim().slice(0, 60) || DEFAULT_TITLE;
@@ -762,19 +781,18 @@ $("title").addEventListener("keydown", e => { if (e.key === "Enter") e.target.bl
 $("copy").addEventListener("click", () => {
   const f = tally("faction","horde","alliance"), r = tally("realm","pvp","pve");
   const lines = [state.title, verdictLine(f,"Horde","Alliance") + " · " + verdictLine(r,"PvP","PvE"), ""];
-  const all = players();
-  ["in","maybe","out"].forEach(s => {
-    const g = all.filter(p => p.status === s).sort((a,b) => String(a.name).localeCompare(String(b.name)));
-    if (!g.length) return;
-    lines.push(labelOf(STATUS, s) + " (" + g.length + ")");
-    g.forEach(p => {
-      const bits = [labelOf(FACTION, p.faction), labelOf(REALM, p.realm)];
+  const all = players().sort((a, b) => String(a.name).localeCompare(String(b.name)));
+  if (all.length) {
+    lines.push("Roster (" + all.length + ")");
+    all.forEach(p => {
+      const bits = [p.faction === "either" ? "any faction" : labelOf(FACTION, p.faction),
+                    p.realm === "either" ? "PvP or PvE" : labelOf(REALM, p.realm)];
       const cs = classesOf(p); if (cs.length) bits.push(cs.join("/"));
       if (p.serverTime && p.serverTime !== "any") bits.push(labelOf(SERVER, p.serverTime) + " time");
       lines.push("  " + p.name + " — " + bits.join(", ") + (p.note ? " (" + p.note + ")" : ""));
     });
     lines.push("");
-  });
+  }
   lines.push(location.href.split("#")[0]);
   const text = lines.join("\n").trim();
   const done = () => showTip("copy-tip", "Copied to clipboard");

@@ -16,10 +16,9 @@
       ".read": true,
       "$id": {
         ".write": true,
-        ".validate": "!newData.exists() || newData.hasChildren(['name', 'status', 'faction', 'realm', 'createdAt', 'updatedAt'])",
+        ".validate": "!newData.exists() || newData.hasChildren(['name', 'faction', 'realm', 'createdAt', 'updatedAt'])",
 
         "name":       { ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 40" },
-        "status":     { ".validate": "newData.isString() && newData.val().matches(/^(in|maybe|out)$/)" },
         "faction":    { ".validate": "newData.isString() && newData.val().matches(/^(horde|alliance|either)$/)" },
         "realm":      { ".validate": "newData.isString() && newData.val().matches(/^(pvp|pve|either)$/)" },
         "serverTime": { ".validate": "newData.isString() && newData.val().matches(/^(any|et|ct|mt|pt)$/)" },
