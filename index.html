@@ -307,7 +307,7 @@ footer .sync.err{color:#ff6b5e}
       <path d="M32 16 L36 27 L48 28 L39 35 L42 47 L32 41 L22 47 L25 35 L16 28 L28 27 Z" fill="url(#g)"/>
     </svg>
     <h1><input class="editable-title" id="title" value="Classic Roll Call" aria-label="Tracker name" spellcheck="false" maxlength="60"></h1>
-    <p>Who's committing to Classic, and what we're rolling. Add yourself, change your mind whenever — everyone sees the same board, live.</p>
+    <p>Who's committing to Classic, and what we're rolling. Add yourself, change your mind whenever — everyone sees the same board, live. Only you can change your own row.</p>
   </header>
 
   <div class="notice hidden" id="setup-notice">
@@ -619,7 +619,7 @@ function render() {
   const meOnBoard = myId && state.players[myId];
   const hint = $("form-hint");
   if (meOnBoard && !editingId) {
-    hint.textContent = "You're already on the roster as " + meOnBoard.name + " — hit Edit on your row to change your picks. This form adds someone else.";
+    hint.textContent = "You're on the roster as " + meOnBoard.name + " — hit Edit on your row to change your picks. Anyone you add here can only be edited from this browser.";
     hint.classList.remove("hidden");
   } else {
     hint.classList.add("hidden");
@@ -650,10 +650,10 @@ function render() {
         ${p.note ? `<span class="note">${esc(p.note)}</span>` : ""}
         ${when ? `<span class="when">updated ${when}</span>` : ""}</span>
       <span class="chips">${chips}</span>
-      <span class="row-acts">
+      ${p.id === myId ? `<span class="row-acts">
         <button class="icon" data-edit="${esc(p.id)}">Edit</button>
         <button class="icon" data-del="${esc(p.id)}">Remove</button>
-      </span></li>`;
+      </span>` : ""}</li>`;
   }).join("");
 }
 
@@ -720,6 +720,7 @@ $("roster").addEventListener("click", e => {
   const t = e.target;
   const ed = t.getAttribute && t.getAttribute("data-edit");
   const dl = t.getAttribute && t.getAttribute("data-del");
+  if ((ed || dl) !== myId) return;          // only your own row
   if (ed) {
     const p = state.players[ed];
     if (!p) return;
