@@ -141,12 +141,14 @@ h2{
 .cov-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 @media (min-width:640px){.cov-grid{grid-template-columns:repeat(9,1fr)}}
 .cov{
-  display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0;
+  display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0;
   padding:8px 2px;border:1px solid var(--line-soft);background:rgba(0,0,0,.25);
   font-family:"Cinzel",Georgia,serif;font-size:11px;letter-spacing:.03em;
 }
-.cov b{font-family:"Alegreya Sans",sans-serif;font-size:18px;font-weight:700}
-.cov.zero{opacity:.35}
+.cov img{width:34px;height:34px;border-radius:6px;border:2px solid currentColor;background:#000}
+.cov b{font-family:"Alegreya Sans",sans-serif;font-size:18px;font-weight:700;line-height:1.1}
+.cov.zero{opacity:.4}
+.cov.zero img{filter:grayscale(.9)}
 .cov.zero b{color:var(--muted)}
 
 /* ---- roster ---- */
@@ -183,7 +185,12 @@ li.me{background:rgba(212,175,90,.07)}
 .chip.pvp{color:#ff9d6a;border-color:var(--pvp)}
 .chip.pve{color:#8fd4a0;border-color:var(--pve)}
 .chip.st{color:var(--muted)}
-.chip.cls{font-weight:700;border-style:solid}
+.cls-ico{
+  width:32px;height:32px;border-radius:6px;display:block;
+  border:2px solid var(--c);box-shadow:0 0 0 1px rgba(0,0,0,.6),0 0 8px color-mix(in srgb,var(--c) 35%,transparent);
+  background:#000;object-fit:cover;
+}
+.chips .cls-ico{margin-left:2px}
 .row-acts{display:flex;gap:4px}
 .icon{
   background:none;border:1px solid transparent;color:var(--muted);
@@ -236,14 +243,16 @@ input::placeholder{color:#6f6148}
 .class-picks label{position:relative}
 .class-picks input{position:absolute;opacity:0;width:0;height:0}
 .class-picks span{
-  display:block;padding:6px 11px;cursor:pointer;user-select:none;
+  display:flex;align-items:center;gap:8px;padding:5px 11px 5px 5px;cursor:pointer;user-select:none;
   font-family:"Cinzel",Georgia,serif;font-size:13px;letter-spacing:.04em;
-  color:var(--muted);border:1px solid var(--line-soft);border-radius:2px;background:rgba(0,0,0,.35);
+  color:var(--muted);border:1px solid var(--line-soft);border-radius:4px;background:rgba(0,0,0,.35);
   transition:color .12s,border-color .12s,background .12s
 }
+.class-picks span img{width:26px;height:26px;border-radius:4px;filter:grayscale(.85) brightness(.7);transition:filter .12s}
 .class-picks input:checked + span{
   color:var(--c);border-color:var(--c);background:color-mix(in srgb,var(--c) 14%,transparent);font-weight:700
 }
+.class-picks input:checked + span img{filter:none}
 .class-picks input:focus-visible + span{outline:2px solid var(--gold);outline-offset:1px}
 
 .two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
@@ -419,6 +428,8 @@ const firebaseConfig = {
 };
 // ────────────────────────────────────────────────────────────────────────────
 
+// Icons are Blizzard's class icons (icons/<name>.jpg), fetched from Blizzard's
+// render CDN and hosted with the page.
 const CLASSES = [
   { name:"Warrior", color:"#C69B6D" },
   { name:"Paladin", color:"#F48CBA" },
@@ -429,7 +440,8 @@ const CLASSES = [
   { name:"Mage",    color:"#3FC7EB" },
   { name:"Warlock", color:"#8788EE" },
   { name:"Druid",   color:"#FF7C0A" }
-];
+].map(c => ({ ...c, icon: "icons/" + c.name.toLowerCase() + ".jpg" }));
+const iconImg = (c, cls) => `<img class="${cls}" src="${c.icon}" alt="${c.name}" title="${c.name}" width="56" height="56" style="--c:${c.color}">`;
 const HEALERS = ["Priest","Druid","Shaman","Paladin"];
 const TANKS   = ["Warrior","Druid","Paladin"];
 
@@ -588,7 +600,7 @@ function coverageHTML() {
     ? (undecided ? undecided + " still undecided on class" : "everyone's picked something")
     : "";
   return CLASSES.map(c => `<div class="cov${counts[c.name] ? "" : " zero"}" style="color:${c.color}">
-      <b>${counts[c.name]}</b>${c.name}</div>`).join("");
+      ${iconImg(c, "")}<b>${counts[c.name]}</b>${c.name}</div>`).join("");
 }
 
 function flags() {
@@ -658,7 +670,7 @@ function chipsFor(p) {
   chips += p.realm === "either"   ? `<span class="chip st">PvP or PvE</span>`  : `<span class="chip ${esc(p.realm)}">${labelOf(REALM, p.realm)}</span>`;
   classesOf(p).forEach(n => {
     const c = CLASSES.find(x => x.name === n);
-    chips += `<span class="chip cls" style="color:${c.color};border-color:${c.color}">${n}</span>`;
+    chips += iconImg(c, "cls-ico");
   });
   if (p.serverTime && p.serverTime !== "any") chips += `<span class="chip st">${labelOf(SERVER, p.serverTime)} time</span>`;
   return chips;
@@ -676,7 +688,7 @@ const setSeg = (name, val) => { const el = document.querySelector(`input[name="$
 segments($("f-faction"), "faction", FACTION, "either");
 segments($("f-realm"),   "realm",   REALM,   "either");
 $("f-classes").innerHTML = CLASSES.map(c =>
-  `<label><input type="checkbox" name="cls" value="${c.name}"><span style="--c:${c.color}">${c.name}</span></label>`).join("");
+  `<label><input type="checkbox" name="cls" value="${c.name}"><span style="--c:${c.color}"><img src="${c.icon}" alt="" width="56" height="56">${c.name}</span></label>`).join("");
 $("f-server").innerHTML = SERVER.map(o => `<option value="${o[0]}">${o[1]}</option>`).join("");
 
 function pickedClasses() {
