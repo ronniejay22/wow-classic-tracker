@@ -3,8 +3,9 @@
 A one-page roll call for a friend group heading into WoW Classic. Everyone adds themselves — in / maybe / out, faction, PvP or PvE, classes they're eyeing — and the whole group sees the same live board. Nobody's the decider; the page just makes the spread visible.
 
 - `index.html` — the whole app (no build step)
-- `firebase-rules.json` — database rules to paste into the Firebase console
-- Backend: Firebase Realtime Database (free Spark plan). Hosting: GitHub Pages.
+- `firebase-rules.json` — database rules (deployable with the CLI, or paste into the console)
+- `firebase.json` / `.firebaserc` — Firebase Hosting config
+- Backend: Firebase Realtime Database (free Spark plan). Hosting: Firebase Hosting at <https://wow-forever-tracker.web.app>.
 
 ## One-time setup (about 5 minutes)
 
@@ -60,15 +61,21 @@ const firebaseConfig = {
 
 ### 6. Deploy
 
-Commit and push. GitHub Pages redeploys in about a minute:
+One-time: `npx firebase-tools login` (opens a Google sign-in). Then, whenever `index.html` changes:
 
 ```sh
-git add index.html
-git commit -m "Add Firebase config"
+npx firebase-tools deploy --only hosting
+```
+
+It's live at <https://wow-forever-tracker.web.app> within seconds. Commit and push to GitHub too so the repo stays the source of truth:
+
+```sh
+git add -A
+git commit -m "Describe the change"
 git push
 ```
 
-Then open the Pages URL, add yourself, and share the link.
+To push a rules change from `firebase-rules.json` instead of pasting in the console: `npx firebase-tools deploy --only database`.
 
 ## Running it locally
 
@@ -86,4 +93,4 @@ Before the config is pasted in, the page shows a "Not connected to Firebase yet"
 - **"Can't reach the roster. Check the Firebase rules."** — Step 3 was skipped or the rules didn't publish. Re-paste and hit Publish.
 - **"That didn't save. Firebase rejected it."** — Same cause, or a field failed validation (name over 40 chars, note over 70). The form already caps these, so it's almost always the rules.
 - **Banner says "Not connected"** — the config in `index.html` still contains `PASTE_ME`.
-- **Nothing changes after pushing** — GitHub Pages can take a minute; hard-refresh (Cmd+Shift+R).
+- **Nothing changes after deploying** — hard-refresh (Cmd+Shift+R); Firebase Hosting caches aggressively for a few seconds.
