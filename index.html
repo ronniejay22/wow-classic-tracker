@@ -200,6 +200,16 @@ li.me{background:rgba(212,175,90,.07)}
 .icon:hover{border-color:var(--gold-dim);color:var(--gold-bright)}
 .empty{padding:26px 14px;color:var(--muted);border-bottom:1px solid var(--line-soft)}
 
+/* ---- loading / connection state ---- */
+.loading{
+  margin:0;padding:6px 0;text-align:center;
+  font-family:"Cinzel",Georgia,serif;font-size:15px;letter-spacing:.08em;color:var(--gold);
+}
+.loading.state-loading::after{content:"";display:inline-block;width:1.2em;text-align:left;animation:dots 1.4s steps(4,end) infinite}
+@keyframes dots{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
+.loading.state-slow,.loading.state-error{color:#ff8a7a;font-family:"Alegreya Sans",sans-serif;font-size:16px;letter-spacing:0}
+@media (prefers-reduced-motion:reduce){.loading.state-loading::after{animation:none;content:"…"}}
+
 /* ---- collapsed "you're on the roster" bar ---- */
 .me-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .me-who{display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-width:0}
@@ -325,6 +335,7 @@ footer .sync.err{color:#ff6b5e}
   </div>
 
   <section class="panel" aria-labelledby="form-h">
+    <p id="loading" class="loading" role="status" aria-live="polite">Summoning the roster</p>
     <div id="me-bar" class="me-bar hidden">
       <div class="me-who">
         <span class="lbl">You're on the roster as</span>
@@ -381,7 +392,7 @@ footer .sync.err{color:#ff6b5e}
     </div>
   </section>
 
-  <section class="panel" aria-labelledby="call-h">
+  <section class="panel" id="call-panel" aria-labelledby="call-h">
     <h2 id="call-h">Where the group stands</h2>
     <div id="splits"></div>
     <div class="coverage">
@@ -391,7 +402,7 @@ footer .sync.err{color:#ff6b5e}
     <div id="flags"></div>
   </section>
 
-  <section class="panel" aria-labelledby="roster-h">
+  <section class="panel" id="roster-panel" aria-labelledby="roster-h">
     <div class="roster-head">
       <h2 id="roster-h">The roster</h2>
       <span class="count" id="roster-count"></span>
@@ -466,6 +477,8 @@ const $ = id => document.getElementById(id);
 let state = { title: DEFAULT_TITLE, players: {} };
 let editingId = null;
 let addingAnother = false;   // "Add someone else" opened the form while you're already on the roster
+let loadState = "loading";   // loading | slow | ready | error — the roster is only trustworthy once "ready"
+let slowTimer = null;
 let myId = null;
 try { myId = localStorage.getItem(LS_ME); } catch (e) {}
 
@@ -492,10 +505,14 @@ if (configured) {
   };
   const onErr = err => {
     console.error(err);
+    loadState = "error";
+    render();
     setSync("Can't reach the roster. Check the Firebase rules (see README).", true);
   };
+  setSync("Connecting…");
   onValue(ref(db, "players"), snap => {
     state.players = snap.val() || {};
+    loadState = "ready";
     render();
     setSync("Live — everyone with the link sees this board.");
   }, onErr);
@@ -503,7 +520,20 @@ if (configured) {
     state.title = snap.val() || DEFAULT_TITLE;
     render();
   }, onErr);
+  // Firebase's own connection flag: flips to false when the browser is offline
+  // or the roster server can't be reached, so the page can say so instead of
+  // looking empty.
+  onValue(ref(db, ".info/connected"), snap => {
+    const on = snap.val() === true;
+    if (!on && loadState === "loading") {
+      clearTimeout(slowTimer);
+      slowTimer = setTimeout(() => { if (loadState === "loading") { loadState = "slow"; render(); } }, 8000);
+    }
+    if (on && loadState === "slow") { loadState = "loading"; render(); }
+    if (loadState === "ready") setSync(on ? "Live — everyone with the link sees this board." : "Offline — showing the last roster this browser saw. Changes won't save until you're back.", !on);
+  });
 } else {
+  loadState = "ready";
   $("setup-notice").classList.remove("hidden");
   setSync("Not connected — changes stay in this tab.", true);
   let seq = 0;
@@ -629,6 +659,30 @@ function render() {
   if (document.activeElement !== $("title")) $("title").value = state.title;
   document.title = state.title;
 
+  // Until the roster has actually arrived, say so — an empty board here would
+  // look like everyone vanished, and would offer sign-up to people already on it.
+  const pending = loadState !== "ready";
+  $("loading").classList.toggle("hidden", !pending);
+  $("call-panel").classList.toggle("hidden", pending);
+  $("roster-panel").classList.toggle("hidden", pending);
+  $("copy").disabled = pending;
+  $("me-bar").classList.toggle("hidden", true);
+  $("form-body").classList.toggle("hidden", pending);
+  if (pending) {
+    $("loading").className = "loading state-" + loadState;
+    $("loading").textContent = {
+      loading: "Summoning the roster",
+      slow:    "Still trying to reach the roster. Check your connection — if this doesn't clear, refresh.",
+      error:   "Couldn't reach the roster. Refresh to try again."
+    }[loadState];
+    $("splits").innerHTML = "";
+    $("coverage").innerHTML = "";
+    $("flags").innerHTML = "";
+    $("roster-count").textContent = "";
+    $("roster").innerHTML = "";
+    return;
+  }
+
   $("splits").innerHTML =
     splitHTML("faction", "Faction", tally("faction","horde","alliance"), "Horde", "Alliance", FACTION[0][2], FACTION[1][2]) +
     splitHTML("realm",   "Realm type", tally("realm","pvp","pve"), "PvP", "PvE", REALM[0][2], REALM[1][2]);
@@ -675,15 +729,13 @@ function render() {
 }
 
 function chipsFor(p) {
-  let chips = "";
-  chips += p.faction === "either" ? `<span class="chip st">Any faction</span>` : optImg(FACTION, p.faction, "cls-ico");
-  chips += p.realm === "either"   ? `<span class="chip st">PvP or PvE</span>`  : optImg(REALM, p.realm, "cls-ico");
-  classesOf(p).forEach(n => {
-    const c = CLASSES.find(x => x.name === n);
-    chips += iconImg(c, "cls-ico");
-  });
-  if (p.serverTime && p.serverTime !== "any") chips += `<span class="chip st">${labelOf(SERVER, p.serverTime)} time</span>`;
-  return chips;
+  // Text badges first, then icons, so rows read consistently.
+  const text = [], icons = [];
+  if (p.faction === "either") text.push(`<span class="chip st">Any faction</span>`); else icons.push(optImg(FACTION, p.faction, "cls-ico"));
+  if (p.realm === "either")   text.push(`<span class="chip st">PvP or PvE</span>`);  else icons.push(optImg(REALM, p.realm, "cls-ico"));
+  if (p.serverTime && p.serverTime !== "any") text.push(`<span class="chip st">${labelOf(SERVER, p.serverTime)} time</span>`);
+  classesOf(p).forEach(n => icons.push(iconImg(CLASSES.find(x => x.name === n), "cls-ico")));
+  return text.concat(icons).join("");
 }
 
 /* ---------- form ---------- */
