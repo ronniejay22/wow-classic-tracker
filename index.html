@@ -110,35 +110,55 @@ h2{
 .notice code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;color:var(--gold-bright)}
 .hidden{display:none !important}
 
-/* ---- the call ---- */
-.split{margin-bottom:22px}
-.split-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:7px;flex-wrap:wrap}
+/* ---- battle lines: the column headers ARE the split bar ---- */
+.split-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:12px;flex-wrap:wrap}
 .split-head strong{font-weight:700;font-size:19px}
 .split-head span{color:var(--muted);font-size:15px}
-.bar{
-  display:flex;height:22px;border:1px solid var(--gold-dim);
-  background:var(--neutral);overflow:hidden;
-  box-shadow:inset 0 2px 4px rgba(0,0,0,.5);
+.axis-pick{display:flex;align-items:center;gap:10px}
+.axis-lbl{font-family:"Cinzel",Georgia,serif;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.seg.small span{min-height:32px;padding:4px 12px;font-size:12px;white-space:nowrap}
+.seg.small label{min-width:0}
+
+.lines{display:flex;align-items:stretch;gap:0;border:1px solid var(--gold-dim);box-shadow:0 0 0 3px var(--panel),0 0 0 4px var(--line-soft)}
+.col{flex:0 1 0;min-width:190px;display:flex;flex-direction:column;border-right:1px solid var(--line-soft);--c:var(--neutral)}
+.col:last-child{border-right:none}
+.col.a{--c:var(--horde)}  .col.b{--c:var(--alliance)}
+.axis-realm .col.a{--c:var(--pvp)}  .axis-realm .col.b{--c:var(--pve)}
+.col-head{
+  display:flex;align-items:center;gap:8px;padding:9px 12px;min-height:48px;
+  font-family:"Cinzel",Georgia,serif;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#fff;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--c) 70%,#fff 18%),var(--c));
+  box-shadow:inset 0 -2px 4px rgba(0,0,0,.35);text-shadow:0 1px 0 rgba(0,0,0,.5)
 }
-.bar div{transition:width .35s ease}
-.bar .a{background:linear-gradient(180deg,#d9483a,var(--horde))}
-.bar .b{background:linear-gradient(180deg,#5b93e0,var(--alliance))}
-.split.realm .bar .a{background:linear-gradient(180deg,#e2864f,var(--pvp))}
-.split.realm .bar .b{background:linear-gradient(180deg,#72b383,var(--pve))}
-.bar .mid{background:repeating-linear-gradient(45deg,transparent,transparent 5px,rgba(255,255,255,.06) 5px,rgba(255,255,255,.06) 10px)}
-.legend{display:flex;justify-content:space-between;margin-top:6px;font-size:14px;color:var(--muted)}
-.legend b{font-weight:500;color:var(--text);display:flex;align-items:center;gap:6px}
-.legend img{width:22px;height:22px;border-radius:4px;border:1px solid rgba(0,0,0,.6)}
+.col.mid .col-head{
+  color:var(--text);
+  background:var(--neutral) repeating-linear-gradient(45deg,transparent,transparent 5px,rgba(255,255,255,.06) 5px,rgba(255,255,255,.06) 10px)
+}
+.col-head img{width:26px;height:26px;border-radius:4px;border:1px solid rgba(0,0,0,.6)}
+.col-head b{font-family:"Alegreya Sans",sans-serif;font-size:22px;margin-left:auto;line-height:1}
+.cards{display:flex;flex-direction:column;gap:8px;padding:10px;flex:1;background:rgba(0,0,0,.18)}
+.card{padding:10px 12px;background:rgba(0,0,0,.3);border-left:3px solid var(--c)}
+.card.me{background:rgba(212,175,90,.09)}
+.card .chips{margin-top:6px}
+.card .row-acts{margin-top:6px}
+.nobody{padding:18px 12px;color:var(--muted);font-style:italic;text-align:center}
+.lines-foot{margin-top:10px;text-align:right}
+.empty{padding:26px 14px;color:var(--muted);text-align:center}
+
+/* phone: the columns stack into bands; each header's fill shows its share */
+@media (max-width:639px){
+  .lines{flex-direction:column;border:none;box-shadow:none;gap:12px}
+  .col{min-width:0;border:1px solid var(--line-soft)}
+  .col-head{background:linear-gradient(90deg,var(--c) var(--share,0%),rgba(0,0,0,.35) var(--share,0%))}
+  .col.mid .col-head{background:linear-gradient(90deg,#4a3d2e var(--share,0%),rgba(0,0,0,.35) var(--share,0%))}
+}
+
 .flag{
   margin-top:14px;padding:10px 14px;border-left:3px solid var(--gold);
   background:rgba(212,175,90,.06);font-size:15px;color:var(--text)
 }
 .flag + .flag{margin-top:8px}
 
-.coverage{margin-top:6px}
-.coverage-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:8px;flex-wrap:wrap}
-.coverage-head strong{font-size:17px}
-.coverage-head span{color:var(--muted);font-size:14px}
 .cov-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 @media (min-width:640px){.cov-grid{grid-template-columns:repeat(9,1fr)}}
 .cov{
@@ -155,26 +175,15 @@ h2{
 /* ---- roster ---- */
 .roster-head{display:flex;align-items:baseline;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:14px}
 .roster-head h2{margin:0}
-.roster-head .count{font-family:"Cinzel",Georgia,serif;font-size:13px;letter-spacing:.06em;color:var(--muted)}
-ul.roster{list-style:none;margin:0;padding:0;border-top:1px solid var(--line-soft)}
-ul.roster li{
-  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
-  padding:12px 14px;border-bottom:1px solid var(--line-soft);
-  border-left:4px solid var(--neutral);
-  background:rgba(0,0,0,.18);
-}
-li.f-horde{border-left-color:var(--horde)}
-li.f-alliance{border-left-color:var(--alliance)}
-li.me{background:rgba(212,175,90,.07)}
-.who{flex:1 1 150px;min-width:0}
-.who .nm{font-weight:700;font-size:17px;display:block;overflow-wrap:anywhere}
-.who .nm .you{
+.roster-head .count,.count{font-family:"Cinzel",Georgia,serif;font-size:13px;letter-spacing:.06em;color:var(--muted)}
+.nm{font-weight:700;font-size:17px;display:block;overflow-wrap:anywhere}
+.nm .you{
   display:inline-block;margin-left:8px;padding:0 7px;font-size:11px;line-height:18px;
   font-family:"Cinzel",Georgia,serif;letter-spacing:.08em;
   color:var(--bg);background:var(--gold);border-radius:2px;vertical-align:middle
 }
-.who .note{color:var(--muted);font-size:14px;font-style:italic;display:block}
-.who .when{color:var(--muted);font-size:13px;display:block;opacity:.8}
+.note{color:var(--muted);font-size:14px;font-style:italic;display:block}
+.when{color:var(--muted);font-size:13px;display:block;opacity:.8}
 .chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .chip{
   font-family:"Cinzel",Georgia,serif;font-size:12px;letter-spacing:.04em;
@@ -392,22 +401,29 @@ footer .sync.err{color:#ff6b5e}
     </div>
   </section>
 
-  <section class="panel" id="call-panel" aria-labelledby="call-h">
-    <h2 id="call-h">Where the group stands</h2>
-    <div id="splits"></div>
-    <div class="coverage">
-      <div class="coverage-head"><strong>Class coverage</strong><span id="cov-note"></span></div>
-      <div class="cov-grid" id="coverage"></div>
+  <section class="panel" id="lines-panel" aria-labelledby="lines-h">
+    <div class="roster-head">
+      <h2 id="lines-h">Battle lines</h2>
+      <div class="axis-pick">
+        <span class="axis-lbl">Split by</span>
+        <div class="seg small" id="axis" role="group" aria-label="Split by">
+          <label><input type="radio" name="axis" value="faction" checked><span>Faction</span></label>
+          <label><input type="radio" name="axis" value="realm"><span>Realm type</span></label>
+        </div>
+      </div>
     </div>
-    <div id="flags"></div>
+    <div class="split-head"><strong id="lines-verdict"></strong><span id="lines-note"></span></div>
+    <div class="lines" id="lines"></div>
+    <div class="lines-foot"><span class="count" id="roster-count"></span></div>
   </section>
 
-  <section class="panel" id="roster-panel" aria-labelledby="roster-h">
+  <section class="panel" id="cov-panel" aria-labelledby="cov-h">
     <div class="roster-head">
-      <h2 id="roster-h">The roster</h2>
-      <span class="count" id="roster-count"></span>
+      <h2 id="cov-h">Class coverage</h2>
+      <span class="count" id="cov-note"></span>
     </div>
-    <ul class="roster" id="roster"></ul>
+    <div class="cov-grid" id="coverage"></div>
+    <div id="flags"></div>
   </section>
 
   <div class="actions" style="justify-content:center">
@@ -479,6 +495,15 @@ let editingId = null;
 let addingAnother = false;   // "Add someone else" opened the form while you're already on the roster
 let loadState = "loading";   // loading | slow | ready | error — the roster is only trustworthy once "ready"
 let slowTimer = null;
+const LS_AXIS = "classic-roll-call:axis";
+let axis = "faction";        // which split the battle lines show: "faction" | "realm"
+try { if (localStorage.getItem(LS_AXIS) === "realm") axis = "realm"; } catch (e) {}
+
+// The two ways to draw the battle lines. `a` and `b` are the sides, "either" is the middle.
+const AXES = {
+  faction: { field:"faction", a:"horde", b:"alliance", aLabel:"Horde", bLabel:"Alliance", aIcon:"icons/horde.jpg", bIcon:"icons/alliance.jpg", midLabel:"Either faction" },
+  realm:   { field:"realm",   a:"pvp",   b:"pve",      aLabel:"PvP",   bLabel:"PvE",      aIcon:"icons/pvp.jpg",   bIcon:"icons/pve.jpg",   midLabel:"PvP or PvE" }
+};
 let myId = null;
 try { myId = localStorage.getItem(LS_ME); } catch (e) {}
 
@@ -610,19 +635,44 @@ function marginNote(t) {
   return "";
 }
 
-function splitHTML(cls, label, t, aLabel, bLabel, aIcon, bIcon) {
-  const ico = src => src ? `<img src="${src}" alt="" width="56" height="56">` : "";
-  const denom = Math.max(t.total, 1);
-  const pa = Math.round(t.a / denom * 100);
-  const pb = Math.round(t.b / denom * 100);
-  const pm = Math.max(0, 100 - pa - pb);
-  const note = marginNote(t);
-  return `<div class="split ${cls}">
-    <div class="split-head"><strong>${verdictLine(t, aLabel, bLabel)}</strong>${note ? `<span>${note}</span>` : ""}</div>
-    <div class="bar" role="img" aria-label="${label}: ${t.a} ${aLabel}, ${t.b} ${bLabel}, ${t.undecided} flexible">
-      <div class="a" style="width:${pa}%"></div><div class="mid" style="width:${pm}%"></div><div class="b" style="width:${pb}%"></div>
-    </div>
-    <div class="legend"><b>${ico(aIcon)}${aLabel} ${t.a}</b><b>${bLabel} ${t.b}${ico(bIcon)}</b></div>
+// Battle lines: three columns whose headers, side by side, form the split bar.
+// Column widths follow headcount (flex-grow), with a CSS floor so an empty
+// side still shows.
+const byMe = (a, b) => (a.id === myId ? -1 : b.id === myId ? 1 : 0) || String(a.name).localeCompare(String(b.name));
+
+function linesHTML(ax) {
+  const all = players();
+  const groups = [
+    { key:"a",   val:ax.a,     label:ax.aLabel,   icon:ax.aIcon },
+    { key:"mid", val:"either", label:ax.midLabel, icon:null },
+    { key:"b",   val:ax.b,     label:ax.bLabel,   icon:ax.bIcon }
+  ];
+  const denom = Math.max(all.length, 1);
+  return groups.map(g => {
+    const people = all.filter(p => (p[ax.field] || "either") === g.val).sort(byMe);
+    const share = Math.round(people.length / denom * 100);
+    const cards = people.length
+      ? people.map(p => cardHTML(p, ax)).join("")
+      : `<div class="nobody">Nobody yet</div>`;
+    return `<div class="col ${g.key}" style="flex-grow:${people.length};--share:${share}%">
+      <div class="col-head">${g.icon ? `<img src="${g.icon}" alt="" width="56" height="56">` : ""}${g.label}<b>${people.length}</b></div>
+      <div class="cards">${cards}</div>
+    </div>`;
+  }).join("");
+}
+
+function cardHTML(p, ax) {
+  const when = ago(p.updatedAt);
+  const me = p.id === myId;
+  return `<div class="card${me ? " me" : ""}">
+    <span class="nm">${esc(p.name)}${me ? '<span class="you">you</span>' : ""}</span>
+    ${p.note ? `<span class="note">${esc(p.note)}</span>` : ""}
+    ${when ? `<span class="when">updated ${when}</span>` : ""}
+    <span class="chips">${chipsFor(p, ax.field)}</span>
+    ${me ? `<span class="row-acts">
+      <button class="icon" data-edit="${esc(p.id)}">Edit</button>
+      <button class="icon" data-del="${esc(p.id)}">Remove</button>
+    </span>` : ""}
   </div>`;
 }
 
@@ -663,8 +713,8 @@ function render() {
   // look like everyone vanished, and would offer sign-up to people already on it.
   const pending = loadState !== "ready";
   $("loading").classList.toggle("hidden", !pending);
-  $("call-panel").classList.toggle("hidden", pending);
-  $("roster-panel").classList.toggle("hidden", pending);
+  $("lines-panel").classList.toggle("hidden", pending);
+  $("cov-panel").classList.toggle("hidden", pending);
   $("copy").disabled = pending;
   $("me-bar").classList.toggle("hidden", true);
   $("form-body").classList.toggle("hidden", pending);
@@ -675,17 +725,24 @@ function render() {
       slow:    "Still trying to reach the roster. Check your connection — if this doesn't clear, refresh.",
       error:   "Couldn't reach the roster. Refresh to try again."
     }[loadState];
-    $("splits").innerHTML = "";
+    $("lines").innerHTML = "";
     $("coverage").innerHTML = "";
     $("flags").innerHTML = "";
     $("roster-count").textContent = "";
-    $("roster").innerHTML = "";
     return;
   }
 
-  $("splits").innerHTML =
-    splitHTML("faction", "Faction", tally("faction","horde","alliance"), "Horde", "Alliance", FACTION[0][2], FACTION[1][2]) +
-    splitHTML("realm",   "Realm type", tally("realm","pvp","pve"), "PvP", "PvE", REALM[0][2], REALM[1][2]);
+  // Battle lines
+  const ax = AXES[axis];
+  const t = tally(ax.field, ax.a, ax.b);
+  $("lines-verdict").textContent = verdictLine(t, ax.aLabel, ax.bLabel);
+  $("lines-note").textContent = marginNote(t);
+  const lines = $("lines");
+  lines.className = "lines axis-" + axis;
+  const list = players();
+  $("roster-count").textContent = list.length ? list.length + (list.length === 1 ? " player" : " players") : "";
+  lines.innerHTML = list.length ? linesHTML(ax) : '<div class="empty">No one on the list yet. Start with yourself.</div>';
+
   $("coverage").innerHTML = coverageHTML();
   $("flags").innerHTML = flags();
 
@@ -702,37 +759,14 @@ function render() {
   const hint = $("form-hint");
   hint.classList.toggle("hidden", !(addingAnother && !editingId));
   if (addingAnother && !editingId) hint.textContent = "Anyone you add here can only be edited from this browser.";
-
-  const ul = $("roster");
-  const list = players();
-  $("roster-count").textContent = list.length ? list.length + (list.length === 1 ? " player" : " players") : "";
-  if (!list.length) {
-    ul.innerHTML = '<li class="empty">No one on the list yet. Start with yourself.</li>';
-    return;
-  }
-  list.sort((a, b) =>
-    (a.id === myId ? -1 : b.id === myId ? 1 : 0) ||
-    String(a.name).localeCompare(String(b.name)));
-
-  ul.innerHTML = list.map(p => {
-    const when = ago(p.updatedAt);
-    return `<li class="f-${esc(p.faction)}${p.id === myId ? " me" : ""}">
-      <span class="who"><span class="nm">${esc(p.name)}${p.id === myId ? '<span class="you">you</span>' : ""}</span>
-        ${p.note ? `<span class="note">${esc(p.note)}</span>` : ""}
-        ${when ? `<span class="when">updated ${when}</span>` : ""}</span>
-      <span class="chips">${chipsFor(p)}</span>
-      ${p.id === myId ? `<span class="row-acts">
-        <button class="icon" data-edit="${esc(p.id)}">Edit</button>
-        <button class="icon" data-del="${esc(p.id)}">Remove</button>
-      </span>` : ""}</li>`;
-  }).join("");
 }
 
-function chipsFor(p) {
-  // Text badges first, then icons, so rows read consistently.
+// Text badges first, then icons. `skip` names a field the surrounding column
+// already states, so its chip is left out.
+function chipsFor(p, skip) {
   const text = [], icons = [];
-  if (p.faction === "either") text.push(`<span class="chip st">Any faction</span>`); else icons.push(optImg(FACTION, p.faction, "cls-ico"));
-  if (p.realm === "either")   text.push(`<span class="chip st">PvP or PvE</span>`);  else icons.push(optImg(REALM, p.realm, "cls-ico"));
+  if (skip !== "faction") { if (p.faction === "either") text.push(`<span class="chip st">Any faction</span>`); else icons.push(optImg(FACTION, p.faction, "cls-ico")); }
+  if (skip !== "realm")   { if (p.realm === "either")   text.push(`<span class="chip st">PvP or PvE</span>`);  else icons.push(optImg(REALM, p.realm, "cls-ico")); }
   if (p.serverTime && p.serverTime !== "any") text.push(`<span class="chip st">${labelOf(SERVER, p.serverTime)} time</span>`);
   classesOf(p).forEach(n => icons.push(iconImg(CLASSES.find(x => x.name === n), "cls-ico")));
   return text.concat(icons).join("");
@@ -825,13 +859,20 @@ function removeRow(id) {
   }, saveFailed);
 }
 
-$("roster").addEventListener("click", e => {
+$("lines").addEventListener("click", e => {
   const t = e.target;
   const ed = t.getAttribute && t.getAttribute("data-edit");
   const dl = t.getAttribute && t.getAttribute("data-del");
   if (ed) startEdit(ed);
   if (dl) removeRow(dl);
 });
+
+$("axis").addEventListener("change", e => {
+  axis = e.target.value === "realm" ? "realm" : "faction";
+  try { localStorage.setItem(LS_AXIS, axis); } catch (err) {}
+  render();
+});
+document.querySelector(`input[name="axis"][value="${axis}"]`).checked = true;
 
 $("me-edit").addEventListener("click", () => startEdit(myId));
 $("me-remove").addEventListener("click", () => removeRow(myId));
@@ -855,18 +896,23 @@ $("title").addEventListener("keydown", e => { if (e.key === "Enter") e.target.bl
 $("copy").addEventListener("click", () => {
   const f = tally("faction","horde","alliance"), r = tally("realm","pvp","pve");
   const lines = [state.title, verdictLine(f,"Horde","Alliance") + " · " + verdictLine(r,"PvP","PvE"), ""];
-  const all = players().sort((a, b) => String(a.name).localeCompare(String(b.name)));
-  if (all.length) {
-    lines.push("Roster (" + all.length + ")");
-    all.forEach(p => {
-      const bits = [p.faction === "either" ? "any faction" : labelOf(FACTION, p.faction),
-                    p.realm === "either" ? "PvP or PvE" : labelOf(REALM, p.realm)];
+  // Grouped the same way the battle lines currently are.
+  const ax = AXES[axis];
+  const all = players();
+  [[ax.a, ax.aLabel], ["either", ax.midLabel], [ax.b, ax.bLabel]].forEach(([val, label]) => {
+    const g = all.filter(p => (p[ax.field] || "either") === val).sort((a, b) => String(a.name).localeCompare(String(b.name)));
+    if (!g.length) return;
+    lines.push(label + " (" + g.length + ")");
+    g.forEach(p => {
+      const bits = [];
+      if (ax.field !== "faction") bits.push(p.faction === "either" ? "any faction" : labelOf(FACTION, p.faction));
+      if (ax.field !== "realm")   bits.push(p.realm === "either" ? "PvP or PvE" : labelOf(REALM, p.realm));
       const cs = classesOf(p); if (cs.length) bits.push(cs.join("/"));
       if (p.serverTime && p.serverTime !== "any") bits.push(labelOf(SERVER, p.serverTime) + " time");
       lines.push("  " + p.name + " — " + bits.join(", ") + (p.note ? " (" + p.note + ")" : ""));
     });
     lines.push("");
-  }
+  });
   lines.push(location.href.split("#")[0]);
   const text = lines.join("\n").trim();
   const done = () => showTip("copy-tip", "Copied to clipboard");
